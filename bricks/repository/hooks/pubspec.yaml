@@ -1,0 +1,9 @@
+name: hooks
+description: Shared hook utilities for tao_flutter_wizard bricks
+publish_to: none
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  mason: any

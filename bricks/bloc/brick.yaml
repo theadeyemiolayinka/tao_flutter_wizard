@@ -1,0 +1,38 @@
+name: bloc
+description: Generates a Bloc with Freezed events/states, concurrency transformer, and optional HydratedBloc support
+version: 0.1.0+1
+environment:
+  mason: ">=0.1.0-dev.52 <0.1.0"
+vars:
+  feature_name:
+    type: string
+    description: Feature this bloc belongs to (snake_case)
+    example: user_profile
+    prompt: "Feature name (snake_case):"
+  bloc_name:
+    type: string
+    description: Bloc name (PascalCase, without 'Bloc' suffix)
+    example: UserProfile
+    prompt: "Bloc name (PascalCase, e.g. UserProfile):"
+  events:
+    type: array
+    description: "List of event names (PascalCase)"
+    example:
+      - "LoadUserProfile"
+      - "UpdateUserProfile"
+      - "ClearUserProfile"
+    prompt: "Events (PascalCase, one per entry):"
+  states:
+    type: array
+    description: "List of state names (PascalCase)"
+    example:
+      - "Initial"
+      - "Loading"
+      - "Loaded"
+      - "Error"
+    prompt: "States (PascalCase, one per entry):"
+  hydrated:
+    type: boolean
+    description: Whether to use HydratedBloc for state persistence
+    default: false
+    prompt: "Use HydratedBloc (state persistence)?"

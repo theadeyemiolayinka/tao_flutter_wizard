@@ -1,0 +1,26 @@
+name: route
+description: Generates a GoRouter route entry for a feature page and patches feature routes.dart
+version: 0.1.0+1
+environment:
+  mason: ">=0.1.0-dev.52 <0.1.0"
+vars:
+  feature_name:
+    type: string
+    description: Feature this route belongs to (snake_case)
+    example: user_profile
+    prompt: "Feature name (snake_case):"
+  page_name:
+    type: string
+    description: Page name (PascalCase, without 'Page' suffix)
+    example: UserProfile
+    prompt: "Page name (PascalCase, e.g. UserProfile):"
+  route_path:
+    type: string
+    description: URL path for the route
+    example: /user-profile/:id
+    prompt: "Route path (e.g. /user-profile/:id):"
+  route_params:
+    type: string
+    description: Route params to extract from GoRouterState (leave blank if none)
+    default: ""
+    prompt: "Route params (e.g. 'final id = state.pathParameters[\"id\"]!;' — blank for none):"

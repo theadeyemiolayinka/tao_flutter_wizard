@@ -1,0 +1,21 @@
+name: datasource
+description: Generates a Dio-based RemoteDataSource and optional LocalDataSource stub
+version: 0.1.0+1
+environment:
+  mason: ">=0.1.0-dev.52 <0.1.0"
+vars:
+  feature_name:
+    type: string
+    description: Feature this datasource belongs to (snake_case)
+    example: user_profile
+    prompt: "Feature name (snake_case):"
+  entity_name:
+    type: string
+    description: Entity name (PascalCase)
+    example: UserProfile
+    prompt: "Entity name (PascalCase):"
+  include_local:
+    type: boolean
+    description: Whether to also generate a local datasource stub
+    default: false
+    prompt: "Include local datasource?"

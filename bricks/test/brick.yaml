@@ -1,0 +1,21 @@
+name: test
+description: Generates unit test templates for Bloc, Repository, and UseCase using mocktail
+version: 0.1.0+1
+environment:
+  mason: ">=0.1.0-dev.52 <0.1.0"
+vars:
+  feature_name:
+    type: string
+    description: Feature to generate tests for (snake_case)
+    example: user_profile
+    prompt: "Feature name (snake_case):"
+  subject_name:
+    type: string
+    description: Subject name (PascalCase) — e.g. UserProfile (used as prefix for Bloc/Repo/UseCase)
+    example: UserProfile
+    prompt: "Subject name (PascalCase):"
+  test_type:
+    type: string
+    description: "Type of test to generate: bloc | repository | usecase"
+    default: bloc
+    prompt: "Test type (bloc | repository | usecase):"

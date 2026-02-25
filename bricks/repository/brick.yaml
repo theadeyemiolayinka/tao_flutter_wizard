@@ -1,0 +1,24 @@
+name: repository
+description: Generates IRepository interface, Repository implementation, and RemoteDataSource stub; auto-patches feature injection.dart
+version: 0.1.0+1
+environment:
+  mason: ">=0.1.0-dev.52 <0.1.0"
+vars:
+  feature_name:
+    type: string
+    description: Feature this repository belongs to (snake_case)
+    example: user_profile
+    prompt: "Feature name (snake_case):"
+  entity_name:
+    type: string
+    description: Entity name (PascalCase)
+    example: UserProfile
+    prompt: "Entity name (PascalCase):"
+  methods:
+    type: array
+    description: "List of methods in 'methodName(params):ReturnType' format"
+    example:
+      - "getUser(String id):UserProfile"
+      - "createUser(UserProfile user):Unit"
+      - "deleteUser(String id):Unit"
+    prompt: "Methods (methodName(params):ReturnType):"

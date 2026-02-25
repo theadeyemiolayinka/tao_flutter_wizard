@@ -1,0 +1,17 @@
+bricks:
+  feature:
+    path: bricks/feature
+  entity:
+    path: bricks/entity
+  repository:
+    path: bricks/repository
+  usecase:
+    path: bricks/usecase
+  bloc:
+    path: bricks/bloc
+  datasource:
+    path: bricks/datasource
+  route:
+    path: bricks/route
+  test:
+    path: bricks/test

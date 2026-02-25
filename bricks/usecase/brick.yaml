@@ -1,0 +1,26 @@
+name: usecase
+description: Generates a Clean Architecture UseCase wrapping TaskEither<Failure, T>
+version: 0.1.0+1
+environment:
+  mason: ">=0.1.0-dev.52 <0.1.0"
+vars:
+  feature_name:
+    type: string
+    description: Feature this usecase belongs to (snake_case)
+    example: user_profile
+    prompt: "Feature name (snake_case):"
+  usecase_name:
+    type: string
+    description: UseCase name (PascalCase, without 'UseCase' suffix)
+    example: GetUserProfile
+    prompt: "UseCase name (PascalCase, e.g. GetUserProfile):"
+  entity_name:
+    type: string
+    description: Return entity name (PascalCase)
+    example: UserProfile
+    prompt: "Return entity name (PascalCase):"
+  params:
+    type: string
+    description: "Params class fields (leave empty for NoParams)"
+    default: ""
+    prompt: "Params (e.g. 'final String id;' — leave blank for NoParams):"

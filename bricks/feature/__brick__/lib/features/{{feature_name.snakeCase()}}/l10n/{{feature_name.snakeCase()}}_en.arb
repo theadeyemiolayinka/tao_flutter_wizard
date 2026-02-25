@@ -1,0 +1,7 @@
+{
+  "@@locale": "en",
+  "{{feature_name.camelCase()}}Title": "{{feature_name.titleCase()}}",
+  "@{{feature_name.camelCase()}}Title": {
+    "description": "Title for the {{feature_name.titleCase()}} feature"
+  }
+}

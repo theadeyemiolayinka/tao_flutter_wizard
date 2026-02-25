@@ -1,0 +1,7 @@
+.dart_tool/
+.packages
+pubspec.lock
+*.g.dart
+*.freezed.dart
+build/
+.mason/

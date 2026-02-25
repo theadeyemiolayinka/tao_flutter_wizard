@@ -1,0 +1,11 @@
+name: feature
+description: Generates a complete Clean Architecture feature skeleton with injection.dart and routes.dart
+version: 0.1.0+1
+environment:
+  mason: ">=0.1.0-dev.52 <0.1.0"
+vars:
+  feature_name:
+    type: string
+    description: The name of the feature (snake_case)
+    example: user_profile
+    prompt: "Feature name (snake_case):"
