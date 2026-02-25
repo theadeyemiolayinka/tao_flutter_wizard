@@ -7,17 +7,14 @@ vars:
   feature_name:
     type: string
     description: Feature this usecase belongs to (snake_case)
-    example: user_profile
     prompt: "Feature name (snake_case):"
   usecase_name:
     type: string
     description: UseCase name (PascalCase, without 'UseCase' suffix)
-    example: GetUserProfile
     prompt: "UseCase name (PascalCase, e.g. GetUserProfile):"
   entity_name:
     type: string
     description: Return entity name (PascalCase)
-    example: UserProfile
     prompt: "Return entity name (PascalCase):"
   params:
     type: string

@@ -7,29 +7,18 @@ vars:
   feature_name:
     type: string
     description: Feature this bloc belongs to (snake_case)
-    example: user_profile
     prompt: "Feature name (snake_case):"
   bloc_name:
     type: string
     description: Bloc name (PascalCase, without 'Bloc' suffix)
-    example: UserProfile
     prompt: "Bloc name (PascalCase, e.g. UserProfile):"
   events:
     type: array
     description: "List of event names (PascalCase)"
-    example:
-      - "LoadUserProfile"
-      - "UpdateUserProfile"
-      - "ClearUserProfile"
     prompt: "Events (PascalCase, one per entry):"
   states:
     type: array
     description: "List of state names (PascalCase)"
-    example:
-      - "Initial"
-      - "Loading"
-      - "Loaded"
-      - "Error"
     prompt: "States (PascalCase, one per entry):"
   hydrated:
     type: boolean

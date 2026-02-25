@@ -7,12 +7,10 @@ vars:
   feature_name:
     type: string
     description: Feature to generate tests for (snake_case)
-    example: user_profile
     prompt: "Feature name (snake_case):"
   subject_name:
     type: string
     description: Subject name (PascalCase) — e.g. UserProfile (used as prefix for Bloc/Repo/UseCase)
-    example: UserProfile
     prompt: "Subject name (PascalCase):"
   test_type:
     type: string

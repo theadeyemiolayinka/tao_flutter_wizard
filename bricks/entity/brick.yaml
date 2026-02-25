@@ -7,19 +7,12 @@ vars:
   feature_name:
     type: string
     description: Feature this entity belongs to (snake_case)
-    example: user_profile
     prompt: "Feature name (snake_case):"
   entity_name:
     type: string
     description: Entity name (PascalCase)
-    example: UserProfile
     prompt: "Entity name (PascalCase):"
   fields:
     type: array
     description: "List of fields in 'name:type' format (use ? for nullable)"
-    example:
-      - "id:String"
-      - "name:String"
-      - "age:int"
-      - "createdAt:DateTime?"
     prompt: "Fields (name:type, one per entry, use ? for nullable):"

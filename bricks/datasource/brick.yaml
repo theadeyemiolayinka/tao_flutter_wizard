@@ -7,12 +7,10 @@ vars:
   feature_name:
     type: string
     description: Feature this datasource belongs to (snake_case)
-    example: user_profile
     prompt: "Feature name (snake_case):"
   entity_name:
     type: string
     description: Entity name (PascalCase)
-    example: UserProfile
     prompt: "Entity name (PascalCase):"
   include_local:
     type: boolean

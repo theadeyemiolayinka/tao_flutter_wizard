@@ -7,17 +7,14 @@ vars:
   feature_name:
     type: string
     description: Feature this route belongs to (snake_case)
-    example: user_profile
     prompt: "Feature name (snake_case):"
   page_name:
     type: string
     description: Page name (PascalCase, without 'Page' suffix)
-    example: UserProfile
     prompt: "Page name (PascalCase, e.g. UserProfile):"
   route_path:
     type: string
     description: URL path for the route
-    example: /user-profile/:id
     prompt: "Route path (e.g. /user-profile/:id):"
   route_params:
     type: string
