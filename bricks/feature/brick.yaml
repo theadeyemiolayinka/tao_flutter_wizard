@@ -2,7 +2,7 @@ name: feature
 description: Generates a complete Clean Architecture feature skeleton with injection.dart and routes.dart
 version: 0.1.0+1
 environment:
-  mason: ">=0.1.0-dev.52 <0.1.0"
+  mason: ">=0.1.0-dev.52 <1.0.0"
 vars:
   feature_name:
     type: string

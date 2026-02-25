@@ -2,7 +2,7 @@ name: repository
 description: Generates IRepository interface, Repository implementation, and RemoteDataSource stub; auto-patches feature injection.dart
 version: 0.1.0+1
 environment:
-  mason: ">=0.1.0-dev.52 <0.1.0"
+  mason: ">=0.1.0-dev.52 <1.0.0"
 vars:
   feature_name:
     type: string
