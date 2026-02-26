@@ -1,0 +1,46 @@
+name: core
+description: Interactively generates Flutter core folder boilerplate — error handling, network, config, theme, routing, DI
+version: 0.1.0+1
+environment:
+  mason: ">=0.1.0-dev.52 <1.0.0"
+vars:
+  use_cases:
+    type: boolean
+    description: Generate error handling base classes (Failure, exceptions, error_mapper) and UseCase interface
+    default: true
+    prompt: "Generate error handling & UseCase base classes?"
+  network:
+    type: boolean
+    description: Generate Dio network client with logging + token interceptors
+    default: true
+    prompt: "Generate Dio network client with interceptors?"
+  base_url:
+    type: string
+    description: Base API URL used in api_constants.dart
+    default: "https://api.example.com"
+    prompt: "Base API URL:"
+  config:
+    type: boolean
+    description: Generate app config and env setup (envied)
+    default: true
+    prompt: "Generate app config / env setup (uses envied)?"
+  bloc_observer:
+    type: boolean
+    description: Generate a custom AppBlocObserver
+    default: true
+    prompt: "Generate AppBlocObserver?"
+  app_router:
+    type: boolean
+    description: Generate AppRouter (GoRouter) entry point
+    default: true
+    prompt: "Generate AppRouter (GoRouter)?"
+  theme:
+    type: boolean
+    description: Generate theme system with colors, text styles, and light/dark ThemeData
+    default: true
+    prompt: "Generate theme system (colors, text styles, light/dark)?"
+  theme_cubit:
+    type: boolean
+    description: Include ThemeCubit + HydratedCubit for runtime theme switching
+    default: true
+    prompt: "Include ThemeCubit for runtime theme switching?"

@@ -13,5 +13,7 @@ bricks:
     path: bricks/datasource
   route:
     path: bricks/route
+  core:
+    path: bricks/core
   test:
     path: bricks/test
