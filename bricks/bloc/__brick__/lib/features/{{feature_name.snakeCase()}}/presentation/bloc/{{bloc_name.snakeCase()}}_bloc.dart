@@ -36,13 +36,7 @@ class {{bloc_name.pascalCase()}}Bloc
 
   {{/events}}
 {{#hydrated}}
-  // ---------------------------------------------------------------------------
-  // HydratedBloc — powered by Freezed's union JSON support.
-  //
-  // Freezed generates _${{bloc_name.pascalCase()}}StateFromJson which dispatches
-  // via a 'runtimeType' discriminator. Each variant serializes its own fields.
-  // After adding data fields to a state variant, re-run build_runner.
-  // ---------------------------------------------------------------------------
+
   @override
   {{bloc_name.pascalCase()}}State? fromJson(Map<String, dynamic> json) {
     try {

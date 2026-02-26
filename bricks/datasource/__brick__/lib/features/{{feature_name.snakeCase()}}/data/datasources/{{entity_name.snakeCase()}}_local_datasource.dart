@@ -1,4 +1,6 @@
 {{#include_local}}
+import 'package:{{package_name}}/features/{{feature_name.snakeCase()}}/data/models/{{entity_name.snakeCase()}}_model.dart';
+
 abstract interface class I{{entity_name.pascalCase()}}LocalDataSource {
   Future<{{entity_name.pascalCase()}}Model?> getCached{{entity_name.pascalCase()}}(String id);
   Future<void> cache{{entity_name.pascalCase()}}({{entity_name.pascalCase()}}Model model);
