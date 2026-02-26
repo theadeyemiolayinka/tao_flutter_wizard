@@ -65,7 +65,9 @@ void _ensureAppRoutesFile(String filePath, HookContext context) {
   if (file.existsSync()) return;
 
   file.parent.createSync(recursive: true);
-  file.writeAsStringSync(r"""/// Central route name registry.
+  file.writeAsStringSync(r"""// ignore_for_file: constant_identifier_names
+
+/// Central route name registry.
 /// Auto-patched by Mason [route] and [feature] bricks via hook.
 ///
 /// Naming convention for enum entries drives path resolution:

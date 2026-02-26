@@ -13,13 +13,32 @@ void run(HookContext context) {
   final vars = context.vars;
   final featureNameRaw = vars['feature_name'] as String;
   final pageNameRaw = vars['page_name'] as String;
-  final routeParamsRaw = (vars['route_params'] as String? ?? '').trim();
+
+  // path_params is a list of extraction strings, e.g.:
+  //   ['final id = state.pathParameters["id"]!;', ...]
+  final rawPathParams = vars['path_params'];
+  final List<String> pathParams;
+  if (rawPathParams is List) {
+    pathParams = rawPathParams
+        .map((e) => e.toString().trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+  } else if (rawPathParams is String && rawPathParams.isNotEmpty) {
+    pathParams = rawPathParams
+        .split('|')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+  } else {
+    pathParams = [];
+  }
 
   final featureName = _toSnakeCase(featureNameRaw);
   final pageNameSnake = _toSnakeCase(pageNameRaw);
   final pageNamePascal = _toPascalCase(pageNameSnake);
 
-  // e.g. AUTH__LOGIN from feature=auth, page=Login
+  // Build the AppRoutes enum entry from feature + page name.
+  // The page_name itself may contain ___ for path params (e.g. UserDetail___Id).
   final routeEnumEntry = _buildEnumEntry(featureName, pageNameSnake);
 
   final cwd = Directory.current.path;
@@ -28,10 +47,10 @@ void run(HookContext context) {
   final appRoutesPath = '$cwd/lib/core/routes/app_routes.dart';
   final routesDartPath = '$cwd/lib/features/$featureName/routes.dart';
 
-  // 1. Ensure core/routes/app_routes.dart exists
+  // 1. Ensure core/routes/app_routes.dart exists.
   _ensureAppRoutesFile(appRoutesPath, context);
 
-  // 2. Patch AppRoutes enum
+  // 2. Patch AppRoutes enum with the new entry.
   patchAnchor(
     context: context,
     filePath: appRoutesPath,
@@ -39,19 +58,25 @@ void run(HookContext context) {
     insertion: '  $routeEnumEntry,',
   );
 
-  // 3. Build the inline GoRoute entry for routes.dart
-  final hasParams = routeParamsRaw.isNotEmpty;
-  final paramsBlock = hasParams ? '\n        $routeParamsRaw' : '';
+  // 3. Build the inline GoRoute entry.
+  final hasParams = pathParams.isNotEmpty;
+
+  // Build param extraction block (indented inside builder).
+  final paramsBlock = hasParams
+      ? pathParams.map((p) => '      $p').join('\n') + '\n'
+      : '';
+
+  // Page constructor: const if no params, otherwise requires params.
   final pageConstructor = hasParams
-      ? '${pageNamePascal}Page(/* pass params */)'
+      ? '${pageNamePascal}Page(/* TODO: pass extracted params */)'
       : 'const ${pageNamePascal}Page()';
 
   final goRouteEntry = '''
   GoRoute(
     path: AppRoutes.$routeEnumEntry.path,
-    name: AppRoutes.$routeEnumEntry.routeName,$paramsBlock
+    name: AppRoutes.$routeEnumEntry.routeName,
     builder: (context, state) {
-      return $pageConstructor;
+${paramsBlock}      return $pageConstructor;
     },
   ),''';
 
@@ -62,7 +87,7 @@ void run(HookContext context) {
     insertion: goRouteEntry,
   );
 
-  // 4. Add imports to routes.dart
+  // 4. Add imports to routes.dart.
   _addImportsIfMissing(
     filePath: routesDartPath,
     imports: [
@@ -73,14 +98,14 @@ void run(HookContext context) {
   );
 
   context.logger.success(
-    'Route brick: AppRoutes.$routeEnumEntry patched; '
+    'Route brick: AppRoutes.$routeEnumEntry added; '
     'GoRoute inlined into features/$featureName/routes.dart.',
   );
 }
 
 /// Builds the AppRoutes enum constant name.
-/// e.g. feature=auth, page=login => AUTH__LOGIN
-/// e.g. feature=auth, page=user_profile => AUTH__USER_PROFILE
+/// Converts feature_name + page_name to FEATURE__PAGE format.
+/// Page name may already contain ___ for path params.
 String _buildEnumEntry(String featureSnake, String pageSnake) {
   final feature = featureSnake.toUpperCase();
   final page = pageSnake.toUpperCase();
@@ -93,17 +118,19 @@ void _ensureAppRoutesFile(String filePath, HookContext context) {
   if (file.existsSync()) return;
 
   file.parent.createSync(recursive: true);
-  file.writeAsStringSync(r"""/// Central route name registry.
+  file.writeAsStringSync(r"""// ignore_for_file: constant_identifier_names
+
+/// Central route name registry.
 /// Auto-patched by Mason [route] and [feature] bricks via hook.
 ///
-/// Naming convention for enum entries drives path resolution:
+/// Naming convention drives GoRouter path resolution:
 ///   FEATURE__PAGE              => /feature/page
 ///   FEATURE__ITEMS___ITEM_ID   => /feature/items/:item_id
 ///   A__B___ID__C___OTHER_ID    => /a/b/:id/c/:other_id
 ///
 /// Rules:
 ///   __   = path segment separator
-///   ___  = path parameter prefix (the rest of that segment is the param name)
+///   ___  = path parameter prefix (segment becomes :param_name)
 enum AppRoutes {
   // mason:app_routes
 }

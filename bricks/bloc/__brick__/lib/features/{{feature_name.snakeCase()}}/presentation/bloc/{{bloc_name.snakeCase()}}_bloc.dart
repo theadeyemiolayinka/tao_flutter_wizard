@@ -9,7 +9,6 @@ part '{{bloc_name.snakeCase()}}_bloc.freezed.dart';
 part '{{bloc_name.snakeCase()}}_event.dart';
 part '{{bloc_name.snakeCase()}}_state.dart';
 
-
 {{#hydrated}}
 class {{bloc_name.pascalCase()}}Bloc
     extends HydratedBloc<{{bloc_name.pascalCase()}}Event, {{bloc_name.pascalCase()}}State> {
@@ -20,10 +19,7 @@ class {{bloc_name.pascalCase()}}Bloc
 {{/hydrated}}
   {{bloc_name.pascalCase()}}Bloc() : super(const {{bloc_name.pascalCase()}}State.initial()) {
     {{#events}}
-    on<{{bloc_name.pascalCase()}}{{.}}Event>(
-      _on{{.}},
-      transformer: sequential(),
-    );
+    on<{{bloc_name.pascalCase()}}{{.}}Event>(_on{{.}}, transformer: sequential());
     {{/events}}
   }
 
@@ -37,6 +33,12 @@ class {{bloc_name.pascalCase()}}Bloc
 
   {{/events}}
 {{#hydrated}}
+  // ---------------------------------------------------------------------------
+  // HydratedBloc — JSON serialization
+  //
+  // Strategy: persist a 'type' tag; extend each arm with the state's own data
+  // fields if those states carry data (e.g. 'success': (_) => {'type': …, 'user': _.user.toJson()}).
+  // ---------------------------------------------------------------------------
   @override
   {{bloc_name.pascalCase()}}State? fromJson(Map<String, dynamic> json) {
     try {
@@ -56,7 +58,7 @@ class {{bloc_name.pascalCase()}}Bloc
     try {
       return state.map(
         {{#states}}
-        {{#camelCase}}{{.}}{{/camelCase}}: (_) => {'type': '{{#camelCase}}{{.}}{{/camelCase}}'},
+        {{#camelCase}}{{.}}{{/camelCase}}: (_) => <String, dynamic>{'type': '{{#camelCase}}{{.}}{{/camelCase}}'},
         {{/states}}
       );
     } catch (_) {

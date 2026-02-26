@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:{{package_name}}/features/{{feature_name.snakeCase()}}/domain/entities/{{entity_name.snakeCase()}}.dart';
@@ -8,13 +10,7 @@ part '{{entity_name.snakeCase()}}_model.g.dart';
 @freezed
 class {{entity_name.pascalCase()}}Model with _${{entity_name.pascalCase()}}Model {
   const factory {{entity_name.pascalCase()}}Model({
-    {{#fields}}
-    {{#isnullable}}
-    @JsonKey(name: '{{name}}') {{type}}? {{name}},
-    {{/isnullable}}
-    {{^isnullable}}
-    @JsonKey(name: '{{name}}') required {{type}} {{name}},
-    {{/isnullable}}
+    {{#fields}}@JsonKey(name: '{{name}}') {{#isnullable}}{{type}}? {{name}}{{/isnullable}}{{^isnullable}}required {{type}} {{name}}{{/isnullable}},
     {{/fields}}
   }) = _{{entity_name.pascalCase()}}Model;
 
@@ -25,14 +21,12 @@ class {{entity_name.pascalCase()}}Model with _${{entity_name.pascalCase()}}Model
 
   factory {{entity_name.pascalCase()}}Model.fromEntity({{entity_name.pascalCase()}} entity) =>
       {{entity_name.pascalCase()}}Model(
-        {{#fields}}
-        {{name}}: entity.{{name}},
+        {{#fields}}{{name}}: entity.{{name}},
         {{/fields}}
       );
 
   {{entity_name.pascalCase()}} toEntity() => {{entity_name.pascalCase()}}(
-        {{#fields}}
-        {{name}}: {{name}},
+        {{#fields}}{{name}}: {{name}},
         {{/fields}}
       );
 }

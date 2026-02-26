@@ -8,23 +8,12 @@ import 'package:{{package_name}}/features/{{feature_name.snakeCase()}}/domain/re
 {{#has_params}}
 class {{usecase_name.pascalCase()}}Params {
   const {{usecase_name.pascalCase()}}Params({
-    {{#params}}
-    {{#isnullable}}
-    this.{{name}},
-    {{/isnullable}}
-    {{^isnullable}}
-    required this.{{name}},
-    {{/isnullable}}
+    {{#params}}{{#isnullable}}this.{{name}},{{/isnullable}}{{^isnullable}}required this.{{name}},{{/isnullable}}
     {{/params}}
   });
 
   {{#params}}
-  {{#isnullable}}
-  final {{type}}? {{name}};
-  {{/isnullable}}
-  {{^isnullable}}
-  final {{type}} {{name}};
-  {{/isnullable}}
+  final {{type}}{{#isnullable}}?{{/isnullable}} {{name}};
   {{/params}}
 }
 {{/has_params}}
