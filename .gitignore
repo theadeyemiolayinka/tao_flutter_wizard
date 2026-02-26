@@ -5,3 +5,4 @@ pubspec.lock
 *.freezed.dart
 build/
 .mason/
+mason-lock.json
