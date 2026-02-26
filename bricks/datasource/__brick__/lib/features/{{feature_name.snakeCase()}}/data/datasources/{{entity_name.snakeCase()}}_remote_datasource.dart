@@ -1,7 +1,8 @@
 import 'package:dio/dio.dart';
 
-import '../models/{{entity_name.snakeCase()}}_model.dart';
+import 'package:{{package_name}}/features/{{feature_name.snakeCase()}}/data/models/{{entity_name.snakeCase()}}_model.dart';
 
+{{#crud_datasource}}
 abstract interface class I{{entity_name.pascalCase()}}RemoteDataSource {
   Future<{{entity_name.pascalCase()}}Model> get{{entity_name.pascalCase()}}(String id);
   Future<List<{{entity_name.pascalCase()}}Model>> getAll{{entity_name.pascalCase()}}s();
@@ -59,3 +60,26 @@ class {{entity_name.pascalCase()}}RemoteDataSource implements I{{entity_name.pas
     await _dio.delete<void>('$_basePath/$id');
   }
 }
+{{/crud_datasource}}
+{{^crud_datasource}}
+abstract interface class I{{entity_name.pascalCase()}}RemoteDataSource {
+  {{#methods}}
+  {{return_type}} {{method_name}}({{#params}}{{param_type}} {{param_name}}{{^-last}}, {{/-last}}{{/params}});
+  {{/methods}}
+}
+
+class {{entity_name.pascalCase()}}RemoteDataSource implements I{{entity_name.pascalCase()}}RemoteDataSource {
+  const {{entity_name.pascalCase()}}RemoteDataSource({required Dio dio}) : _dio = dio;
+
+  final Dio _dio;
+
+  {{#methods}}
+  @override
+  {{return_type}} {{method_name}}({{#params}}{{param_type}} {{param_name}}{{^-last}}, {{/-last}}{{/params}}) async {
+    // TODO: implement {{method_name}}
+    throw UnimplementedError();
+  }
+
+  {{/methods}}
+}
+{{/crud_datasource}}

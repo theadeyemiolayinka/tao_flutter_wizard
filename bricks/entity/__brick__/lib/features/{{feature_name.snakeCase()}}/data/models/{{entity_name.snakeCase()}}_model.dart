@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../domain/entities/{{entity_name.snakeCase()}}.dart';
+import 'package:{{package_name}}/features/{{feature_name.snakeCase()}}/domain/entities/{{entity_name.snakeCase()}}.dart';
 
 part '{{entity_name.snakeCase()}}_model.freezed.dart';
 part '{{entity_name.snakeCase()}}_model.g.dart';
@@ -32,7 +32,7 @@ class {{entity_name.pascalCase()}}Model with _${{entity_name.pascalCase()}}Model
 
   {{entity_name.pascalCase()}} toEntity() => {{entity_name.pascalCase()}}(
         {{#fields}}
-        {{name}}: {{name}}{{^isnullable}}!{{/isnullable}},
+        {{name}}: {{name}},
         {{/fields}}
       );
 }

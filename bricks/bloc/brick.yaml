@@ -20,7 +20,7 @@ vars:
   states:
     type: list
     description: "List of state names (PascalCase). 'Initial' must be included as the first state."
-    prompt: "States (PascalCase, comma separated — 'Initial' must be first e.g: Initial,Loading,Success,Failure):"
+    prompt: "States (PascalCase, comma separated - 'Initial' must be first e.g: Initial,Loading,Success,Failure):"
     separator: ","
   hydrated:
     type: boolean

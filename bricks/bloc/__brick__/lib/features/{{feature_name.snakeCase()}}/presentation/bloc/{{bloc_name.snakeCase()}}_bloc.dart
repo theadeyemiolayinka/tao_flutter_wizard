@@ -6,9 +6,6 @@ import 'package:hydrated_bloc/hydrated_bloc.dart';
 {{/hydrated}}
 
 part '{{bloc_name.snakeCase()}}_bloc.freezed.dart';
-{{#hydrated}}
-part '{{bloc_name.snakeCase()}}_bloc.g.dart';
-{{/hydrated}}
 part '{{bloc_name.snakeCase()}}_event.dart';
 part '{{bloc_name.snakeCase()}}_state.dart';
 
@@ -43,7 +40,12 @@ class {{bloc_name.pascalCase()}}Bloc
   @override
   {{bloc_name.pascalCase()}}State? fromJson(Map<String, dynamic> json) {
     try {
-      return {{bloc_name.pascalCase()}}State.fromJson(json);
+      return switch (json['type'] as String?) {
+        {{#states}}
+        '{{#camelCase}}{{.}}{{/camelCase}}' => const {{bloc_name.pascalCase()}}State.{{#camelCase}}{{.}}{{/camelCase}}(),
+        {{/states}}
+        _ => null,
+      };
     } catch (_) {
       return null;
     }
@@ -52,7 +54,11 @@ class {{bloc_name.pascalCase()}}Bloc
   @override
   Map<String, dynamic>? toJson({{bloc_name.pascalCase()}}State state) {
     try {
-      return state.toJson();
+      return state.map(
+        {{#states}}
+        {{#camelCase}}{{.}}{{/camelCase}}: (_) => {'type': '{{#camelCase}}{{.}}{{/camelCase}}'},
+        {{/states}}
+      );
     } catch (_) {
       return null;
     }

@@ -4,13 +4,54 @@ import 'package:yaml/yaml.dart';
 
 /// Pre-generation hook for the [usecase] brick.
 ///
-/// Reads the project's pubspec.yaml to inject the package name as a var,
-/// so templates can use `package:{{package_name}}/...` style imports.
+/// Reads the project's pubspec.yaml to inject the package name.
+/// Also parses the `params` list (each item "name:type" or "name:type?")
+/// into structured maps for template use, and sets `has_params`.
 void run(HookContext context) {
   final packageName = _readPackageName(Directory.current.path);
+
+  final rawParams = context.vars['params'];
+
+  final List<String> paramStrings;
+  if (rawParams is List) {
+    paramStrings = rawParams
+        .map((e) => e.toString().trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+  } else if (rawParams is String && rawParams.isNotEmpty) {
+    paramStrings = rawParams
+        .replaceAll('[', '')
+        .replaceAll(']', '')
+        .split('|')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+  } else {
+    paramStrings = [];
+  }
+
+  final parsedParams = paramStrings.map((item) {
+    final clean = item.replaceAll('[', '').replaceAll(']', '').trim();
+    final colonIdx = clean.indexOf(':');
+    if (colonIdx == -1) {
+      return {'name': clean, 'type': 'dynamic', 'isnullable': false};
+    }
+    final fieldName = clean.substring(0, colonIdx).trim();
+    final fieldType = clean.substring(colonIdx + 1).trim();
+    final isNullable = fieldType.endsWith('?');
+    final cleanType = isNullable ? fieldType.substring(0, fieldType.length - 1) : fieldType;
+    return {
+      'name': fieldName,
+      'type': cleanType,
+      'isnullable': isNullable,
+    };
+  }).toList();
+
   context.vars = {
     ...context.vars,
     'package_name': packageName,
+    'params': parsedParams,
+    'has_params': parsedParams.isNotEmpty,
   };
 }
 

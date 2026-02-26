@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import 'package:{{package_name}}/core/routes/app_routes.dart';
+
 class {{feature_name.pascalCase()}}Page extends StatelessWidget {
   const {{feature_name.pascalCase()}}Page({super.key});
 
-  static const routeName = '/{{feature_name.paramCase()}}';
+  static const routeName = AppRoutes.{{feature_name.constantCase()}}__INDEX;
 
   @override
   Widget build(BuildContext context) {

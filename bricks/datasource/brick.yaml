@@ -12,6 +12,17 @@ vars:
     type: string
     description: Entity name (PascalCase)
     prompt: "Entity name (PascalCase):"
+  crud_datasource:
+    type: boolean
+    description: Generate standard CRUD methods (get, getAll, create, update, delete)
+    default: false
+    prompt: "Generate CRUD datasource? (no = enter custom methods)"
+  methods:
+    type: list
+    description: "Custom methods in 'methodName:ReturnType:param1Name/param1Type,param2Name/param2Type' format (ignored when crud_datasource is true)"
+    prompt: "Methods (e.g. login:User:email/String,password/String|logout:void: — leave blank to skip):"
+    separator: "|"
+    default: []
   include_local:
     type: boolean
     description: Whether to also generate a local datasource stub

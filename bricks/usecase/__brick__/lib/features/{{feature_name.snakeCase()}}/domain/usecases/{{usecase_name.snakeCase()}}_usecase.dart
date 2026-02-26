@@ -5,18 +5,32 @@ import 'package:{{package_name}}/core/usecase/usecase.dart';
 import 'package:{{package_name}}/features/{{feature_name.snakeCase()}}/domain/entities/{{entity_name.snakeCase()}}.dart';
 import 'package:{{package_name}}/features/{{feature_name.snakeCase()}}/domain/repositories/i_{{entity_name.snakeCase()}}_repository.dart';
 
-{{#params}}
+{{#has_params}}
 class {{usecase_name.pascalCase()}}Params {
   const {{usecase_name.pascalCase()}}Params({
-    {{{params}}}
+    {{#params}}
+    {{#isnullable}}
+    this.{{name}},
+    {{/isnullable}}
+    {{^isnullable}}
+    required this.{{name}},
+    {{/isnullable}}
+    {{/params}}
   });
 
-  {{{params}}}
+  {{#params}}
+  {{#isnullable}}
+  final {{type}}? {{name}};
+  {{/isnullable}}
+  {{^isnullable}}
+  final {{type}} {{name}};
+  {{/isnullable}}
+  {{/params}}
 }
-{{/params}}
-{{^params}}
+{{/has_params}}
+{{^has_params}}
 typedef {{usecase_name.pascalCase()}}Params = NoParams;
-{{/params}}
+{{/has_params}}
 
 class {{usecase_name.pascalCase()}}UseCase
     implements UseCase<{{entity_name.pascalCase()}}, {{usecase_name.pascalCase()}}Params> {

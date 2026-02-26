@@ -1,6 +1,6 @@
 name: route
-description: Generates a GoRouter route entry for a feature page and patches feature routes.dart
-version: 0.1.0+1
+description: Generates a GoRouter route entry for a feature page and patches feature routes.dart and core AppRoutes enum
+version: 0.1.0+2
 environment:
   mason: ">=0.1.0-dev.52 <1.0.0"
 vars:
@@ -12,12 +12,8 @@ vars:
     type: string
     description: Page name (PascalCase, without 'Page' suffix)
     prompt: "Page name (PascalCase, e.g. UserProfile):"
-  route_path:
-    type: string
-    description: URL path for the route
-    prompt: "Route path (e.g. /user-profile/:id):"
   route_params:
     type: string
-    description: Route params to extract from GoRouterState (leave blank if none)
+    description: "Path parameters to extract from GoRouterState (leave blank if none)"
     default: ""
-    prompt: "Route params (e.g. 'final id = state.pathParameters[\"id\"]!;' - blank for none):"
+    prompt: "Path params to extract (e.g. 'final id = state.pathParameters[\"id\"]!;' — blank for none):"

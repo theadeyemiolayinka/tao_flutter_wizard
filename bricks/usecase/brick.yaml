@@ -17,7 +17,8 @@ vars:
     description: Return entity name (PascalCase)
     prompt: "Return entity name (PascalCase):"
   params:
-    type: string
-    description: "Params class fields (leave empty for NoParams)"
-    default: ""
-    prompt: "Params (e.g. 'final String id;' - leave blank for NoParams):"
+    type: list
+    description: "Params class fields as 'name:type' pairs (use ? suffix for nullable). Leave empty for NoParams."
+    prompt: "Params (name:type separated by |, e.g. id:String|age:int — blank for NoParams):"
+    separator: "|"
+    default: []
