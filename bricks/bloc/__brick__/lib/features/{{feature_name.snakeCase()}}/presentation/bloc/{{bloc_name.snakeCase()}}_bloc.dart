@@ -6,6 +6,9 @@ import 'package:hydrated_bloc/hydrated_bloc.dart';
 {{/hydrated}}
 
 part '{{bloc_name.snakeCase()}}_bloc.freezed.dart';
+{{#hydrated}}
+part '{{bloc_name.snakeCase()}}_bloc.g.dart';
+{{/hydrated}}
 part '{{bloc_name.snakeCase()}}_event.dart';
 part '{{bloc_name.snakeCase()}}_state.dart';
 
@@ -34,20 +37,16 @@ class {{bloc_name.pascalCase()}}Bloc
   {{/events}}
 {{#hydrated}}
   // ---------------------------------------------------------------------------
-  // HydratedBloc — JSON serialization
+  // HydratedBloc — powered by Freezed's union JSON support.
   //
-  // Strategy: persist a 'type' tag; extend each arm with the state's own data
-  // fields if those states carry data (e.g. 'success': (_) => {'type': …, 'user': _.user.toJson()}).
+  // Freezed generates _${{bloc_name.pascalCase()}}StateFromJson which dispatches
+  // via a 'runtimeType' discriminator. Each variant serializes its own fields.
+  // After adding data fields to a state variant, re-run build_runner.
   // ---------------------------------------------------------------------------
   @override
   {{bloc_name.pascalCase()}}State? fromJson(Map<String, dynamic> json) {
     try {
-      return switch (json['type'] as String?) {
-        {{#states}}
-        '{{#camelCase}}{{.}}{{/camelCase}}' => const {{bloc_name.pascalCase()}}State.{{#camelCase}}{{.}}{{/camelCase}}(),
-        {{/states}}
-        _ => null,
-      };
+      return {{bloc_name.pascalCase()}}State.fromJson(json);
     } catch (_) {
       return null;
     }
@@ -56,11 +55,7 @@ class {{bloc_name.pascalCase()}}Bloc
   @override
   Map<String, dynamic>? toJson({{bloc_name.pascalCase()}}State state) {
     try {
-      return state.map(
-        {{#states}}
-        {{#camelCase}}{{.}}{{/camelCase}}: (_) => <String, dynamic>{'type': '{{#camelCase}}{{.}}{{/camelCase}}'},
-        {{/states}}
-      );
+      return state.toJson();
     } catch (_) {
       return null;
     }
