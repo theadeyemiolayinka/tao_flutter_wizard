@@ -13,6 +13,7 @@ vars:
     description: Entity name (PascalCase)
     prompt: "Entity name (PascalCase):"
   fields:
-    type: array
+    type: list
     description: "List of fields in 'name:type' format (use ? for nullable)"
-    prompt: "Fields (name:type, one per entry, use ? for nullable):"
+    prompt: "Fields (name:type, separated by | for e.g. name:type|name2:type2):"
+    separator: "|"

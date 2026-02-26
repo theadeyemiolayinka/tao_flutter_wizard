@@ -13,6 +13,7 @@ vars:
     description: Entity name (PascalCase)
     prompt: "Entity name (PascalCase):"
   methods:
-    type: array
+    type: list
     description: "List of methods in 'methodName(params):ReturnType' format"
-    prompt: "Methods (methodName(params):ReturnType):"
+    prompt: "Methods (methodName(params):ReturnType, separated by |):"
+    separator: "|"
