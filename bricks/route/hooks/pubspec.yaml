@@ -1,5 +1,5 @@
-name: hooks
-description: Shared hook utilities for tao_flutter_wizard bricks
+name: route_hooks
+description: Hook utilities for the route brick
 publish_to: none
 
 environment:
@@ -7,3 +7,4 @@ environment:
 
 dependencies:
   mason: any
+  yaml: any

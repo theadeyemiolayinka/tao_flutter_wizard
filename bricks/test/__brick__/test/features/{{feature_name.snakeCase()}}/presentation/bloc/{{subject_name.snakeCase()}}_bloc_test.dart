@@ -2,8 +2,8 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:your_app/features/{{feature_name.snakeCase()}}/domain/repositories/i_{{subject_name.snakeCase()}}_repository.dart';
-import 'package:your_app/features/{{feature_name.snakeCase()}}/presentation/bloc/{{subject_name.snakeCase()}}_bloc.dart';
+import 'package:{{package_name}}/features/{{feature_name.snakeCase()}}/domain/repositories/i_{{subject_name.snakeCase()}}_repository.dart';
+import 'package:{{package_name}}/features/{{feature_name.snakeCase()}}/presentation/bloc/{{subject_name.snakeCase()}}_bloc.dart';
 
 class _Mock{{subject_name.pascalCase()}}Repository extends Mock
     implements I{{subject_name.pascalCase()}}Repository {}

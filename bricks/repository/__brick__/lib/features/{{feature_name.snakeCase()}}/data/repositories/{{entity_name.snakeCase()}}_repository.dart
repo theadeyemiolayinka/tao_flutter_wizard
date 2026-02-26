@@ -7,10 +7,10 @@ import '../datasources/{{entity_name.snakeCase()}}_remote_datasource.dart';
 
 class {{entity_name.pascalCase()}}Repository implements I{{entity_name.pascalCase()}}Repository {
   const {{entity_name.pascalCase()}}Repository({
-    required {{entity_name.pascalCase()}}RemoteDataSource remoteDataSource,
+    required I{{entity_name.pascalCase()}}RemoteDataSource remoteDataSource,
   }) : _remoteDataSource = remoteDataSource;
 
-  final {{entity_name.pascalCase()}}RemoteDataSource _remoteDataSource;
+  final I{{entity_name.pascalCase()}}RemoteDataSource _remoteDataSource;
 
   {{#methods}}
   @override
@@ -19,7 +19,7 @@ class {{entity_name.pascalCase()}}Repository implements I{{entity_name.pascalCas
       // TODO: implement {{methodName}}
       throw UnimplementedError();
     } on Exception catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(Failure.server(message: e.toString()));
     }
   }
 

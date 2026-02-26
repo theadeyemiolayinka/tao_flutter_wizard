@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'package:mason/mason.dart';
 import 'anchor_patcher.dart';
+import 'package:yaml/yaml.dart';
 
 /// Post-generation hook for the [route] brick.
 ///
 /// Automatically patches the feature's `routes.dart` to add the new route
 /// to the `<featureName>Routes` list above the `// mason:routes` anchor.
+/// Imports use package: style resolved from pubspec.yaml.
 void run(HookContext context) {
   final vars = context.vars;
   final featureName = _toSnakeCase(vars['feature_name'] as String);
@@ -15,8 +17,8 @@ void run(HookContext context) {
   final pageCamel = _toCamelCase(pageSnake);
 
   final cwd = Directory.current.path;
-  final routesPath =
-      '$cwd/lib/features/$featureName/routes.dart';
+  final routesPath = '$cwd/lib/features/$featureName/routes.dart';
+  final packageName = _readPackageName(cwd);
 
   // Insert the route getter reference above // mason:routes
   final routeEntry = '  ${pageCamel}Route,';
@@ -28,11 +30,11 @@ void run(HookContext context) {
     insertion: routeEntry,
   );
 
-  // Add the import for the new route file
+  // Add the import for the new route file using package: style
   _addImportIfMissing(
     filePath: routesPath,
     import:
-        "import 'routes/${pageSnake}_route.dart';",
+        "import 'package:$packageName/features/$featureName/routes/${pageSnake}_route.dart';",
   );
 
   context.logger.success(
@@ -55,6 +57,18 @@ void _addImportIfMissing({
     "import 'package:go_router/go_router.dart';\n$import",
   );
   file.writeAsStringSync(content);
+}
+
+String _readPackageName(String projectRoot) {
+  try {
+    final pubspecFile = File('$projectRoot/pubspec.yaml');
+    if (!pubspecFile.existsSync()) return 'app';
+    final content = pubspecFile.readAsStringSync();
+    final yaml = loadYaml(content) as Map;
+    return (yaml['name'] as String?) ?? 'app';
+  } catch (_) {
+    return 'app';
+  }
 }
 
 String _toSnakeCase(String input) {

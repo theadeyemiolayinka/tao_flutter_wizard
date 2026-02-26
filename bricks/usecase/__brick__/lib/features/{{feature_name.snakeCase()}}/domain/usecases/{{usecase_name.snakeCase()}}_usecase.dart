@@ -1,9 +1,9 @@
 import 'package:fpdart/fpdart.dart';
 
-import '../../../../core/error/failure.dart';
-import '../../../../core/usecase/usecase.dart';
-import '../../domain/entities/{{entity_name.snakeCase()}}.dart';
-import '../../domain/repositories/i_{{entity_name.snakeCase()}}_repository.dart';
+import 'package:{{package_name}}/core/error/failure.dart';
+import 'package:{{package_name}}/core/usecase/usecase.dart';
+import 'package:{{package_name}}/features/{{feature_name.snakeCase()}}/domain/entities/{{entity_name.snakeCase()}}.dart';
+import 'package:{{package_name}}/features/{{feature_name.snakeCase()}}/domain/repositories/i_{{entity_name.snakeCase()}}_repository.dart';
 
 {{#params}}
 class {{usecase_name.pascalCase()}}Params {
@@ -32,10 +32,12 @@ class {{usecase_name.pascalCase()}}UseCase
         () => _repository
             // TODO: Call the repository method with params
             .run()
-            .then((either) => either.fold(
-                  (failure) => throw Exception(failure.message),
-                  (result) => result,
-                )),
-        (error, stackTrace) => ServerFailure(message: error.toString()),
+            .then(
+              (either) => either.fold(
+                (failure) => throw Exception(failure.message),
+                (result) => result,
+              ),
+            ),
+        (error, stackTrace) => Failure.server(message: error.toString()),
       );
 }

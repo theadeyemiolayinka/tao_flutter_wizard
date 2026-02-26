@@ -10,7 +10,7 @@ vars:
     prompt: "Feature name (snake_case):"
   subject_name:
     type: string
-    description: Subject name (PascalCase) — e.g. UserProfile (used as prefix for Bloc/Repo/UseCase)
+    description: Subject name (PascalCase) - e.g. UserProfile (used as prefix for Bloc/Repo/UseCase)
     prompt: "Subject name (PascalCase):"
   test_type:
     type: string

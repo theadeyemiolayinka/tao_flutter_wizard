@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 
-import '../../data/models/{{entity_name.snakeCase()}}_model.dart';
+import '../models/{{entity_name.snakeCase()}}_model.dart';
 
-abstract interface class {{entity_name.pascalCase()}}RemoteDataSource {
+abstract interface class I{{entity_name.pascalCase()}}RemoteDataSource {
   Future<{{entity_name.pascalCase()}}Model> get{{entity_name.pascalCase()}}(String id);
   Future<List<{{entity_name.pascalCase()}}Model>> getAll{{entity_name.pascalCase()}}s();
   Future<{{entity_name.pascalCase()}}Model> create{{entity_name.pascalCase()}}({{entity_name.pascalCase()}}Model model);
@@ -10,9 +10,8 @@ abstract interface class {{entity_name.pascalCase()}}RemoteDataSource {
   Future<void> delete{{entity_name.pascalCase()}}(String id);
 }
 
-class {{entity_name.pascalCase()}}RemoteDataSourceImpl
-    implements {{entity_name.pascalCase()}}RemoteDataSource {
-  const {{entity_name.pascalCase()}}RemoteDataSourceImpl({required Dio dio}) : _dio = dio;
+class {{entity_name.pascalCase()}}RemoteDataSource implements I{{entity_name.pascalCase()}}RemoteDataSource {
+  const {{entity_name.pascalCase()}}RemoteDataSource({required Dio dio}) : _dio = dio;
 
   final Dio _dio;
 
@@ -35,7 +34,8 @@ class {{entity_name.pascalCase()}}RemoteDataSourceImpl
 
   @override
   Future<{{entity_name.pascalCase()}}Model> create{{entity_name.pascalCase()}}(
-      {{entity_name.pascalCase()}}Model model) async {
+    {{entity_name.pascalCase()}}Model model,
+  ) async {
     final response = await _dio.post<Map<String, dynamic>>(
       _basePath,
       data: model.toJson(),
@@ -45,7 +45,8 @@ class {{entity_name.pascalCase()}}RemoteDataSourceImpl
 
   @override
   Future<{{entity_name.pascalCase()}}Model> update{{entity_name.pascalCase()}}(
-      {{entity_name.pascalCase()}}Model model) async {
+    {{entity_name.pascalCase()}}Model model,
+  ) async {
     final response = await _dio.put<Map<String, dynamic>>(
       '$_basePath/${model.id}',
       data: model.toJson(),

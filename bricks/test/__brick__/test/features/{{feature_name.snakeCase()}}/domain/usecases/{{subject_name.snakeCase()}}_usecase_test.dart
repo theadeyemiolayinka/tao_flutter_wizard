@@ -2,26 +2,26 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:your_app/core/error/failure.dart';
-import 'package:your_app/core/usecase/usecase.dart';
-import 'package:your_app/features/{{feature_name.snakeCase()}}/domain/entities/{{subject_name.snakeCase()}}.dart';
-import 'package:your_app/features/{{feature_name.snakeCase()}}/domain/repositories/i_{{subject_name.snakeCase()}}_repository.dart';
-import 'package:your_app/features/{{feature_name.snakeCase()}}/domain/usecases/get_{{subject_name.snakeCase()}}_usecase.dart';
+import 'package:{{package_name}}/core/error/failure.dart';
+import 'package:{{package_name}}/core/usecase/usecase.dart';
+import 'package:{{package_name}}/features/{{feature_name.snakeCase()}}/domain/entities/{{subject_name.snakeCase()}}.dart';
+import 'package:{{package_name}}/features/{{feature_name.snakeCase()}}/domain/repositories/i_{{subject_name.snakeCase()}}_repository.dart';
+import 'package:{{package_name}}/features/{{feature_name.snakeCase()}}/domain/usecases/{{usecase_name_snake}}_usecase.dart';
 
 class _MockI{{subject_name.pascalCase()}}Repository extends Mock
     implements I{{subject_name.pascalCase()}}Repository {}
 
 void main() {
   late _MockI{{subject_name.pascalCase()}}Repository mockRepository;
-  late Get{{subject_name.pascalCase()}}UseCase usecase;
+  late {{subject_name.pascalCase()}}UseCase usecase;
 
   setUp(() {
     mockRepository = _MockI{{subject_name.pascalCase()}}Repository();
-    usecase = Get{{subject_name.pascalCase()}}UseCase(repository: mockRepository);
+    usecase = {{subject_name.pascalCase()}}UseCase(repository: mockRepository);
   });
 
-  group('Get{{subject_name.pascalCase()}}UseCase', () {
-    const tParams = Get{{subject_name.pascalCase()}}Params(id: 'test-id');
+  group('{{subject_name.pascalCase()}}UseCase', () {
+    const tParams = {{subject_name.pascalCase()}}Params(id: 'test-id');
     final t{{subject_name.pascalCase()}} = {{subject_name.pascalCase()}}(
       // TODO: populate required fields
       id: 'test-id',

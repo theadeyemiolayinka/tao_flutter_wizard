@@ -6,8 +6,12 @@ import 'package:hydrated_bloc/hydrated_bloc.dart';
 {{/hydrated}}
 
 part '{{bloc_name.snakeCase()}}_bloc.freezed.dart';
+{{#hydrated}}
+part '{{bloc_name.snakeCase()}}_bloc.g.dart';
+{{/hydrated}}
 part '{{bloc_name.snakeCase()}}_event.dart';
 part '{{bloc_name.snakeCase()}}_state.dart';
+
 
 {{#hydrated}}
 class {{bloc_name.pascalCase()}}Bloc

@@ -7,7 +7,7 @@ import 'package:mason/mason.dart';
 /// 1. Read the target file.
 /// 2. Search for the [anchor] comment (e.g. `// mason:repositories`).
 /// 3. Build the [insertion] string.
-/// 4. Check for idempotency — skip if [insertion] already present.
+/// 4. Check for idempotency - skip if [insertion] already present.
 /// 5. Insert the new content on the line ABOVE the anchor.
 /// 6. Write back atomically.
 ///

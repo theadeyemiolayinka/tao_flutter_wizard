@@ -20,4 +20,4 @@ vars:
     type: string
     description: "Params class fields (leave empty for NoParams)"
     default: ""
-    prompt: "Params (e.g. 'final String id;' — leave blank for NoParams):"
+    prompt: "Params (e.g. 'final String id;' - leave blank for NoParams):"

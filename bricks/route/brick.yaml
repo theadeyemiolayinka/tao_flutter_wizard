@@ -20,4 +20,4 @@ vars:
     type: string
     description: Route params to extract from GoRouterState (leave blank if none)
     default: ""
-    prompt: "Route params (e.g. 'final id = state.pathParameters[\"id\"]!;' — blank for none):"
+    prompt: "Route params (e.g. 'final id = state.pathParameters[\"id\"]!;' - blank for none):"

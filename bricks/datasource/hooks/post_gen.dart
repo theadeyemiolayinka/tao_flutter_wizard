@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:mason/mason.dart';
 import 'anchor_patcher.dart';
 import 'package:recase/recase.dart';
+import 'package:yaml/yaml.dart';
 
 void run(HookContext context) {
   final vars = context.vars;
@@ -11,10 +12,12 @@ void run(HookContext context) {
 
   final cwd = Directory.current.path;
   final injectionPath = '$cwd/lib/features/$featureName/injection.dart';
+  final packageName = _readPackageName(cwd);
 
+  // Register the datasource using I{Name}RemoteDataSource interface
   final datasourceRegistration = '''
-  getIt.registerLazySingleton<${entityName}RemoteDataSource>(
-    () => ${entityName}RemoteDataSourceImpl(dio: getIt()),
+  getIt.registerLazySingleton<I${entityName}RemoteDataSource>(
+    () => ${entityName}RemoteDataSource(dio: getIt()),
   );''';
 
   patchAnchor(
@@ -27,7 +30,7 @@ void run(HookContext context) {
   _addImportsIfMissing(
     filePath: injectionPath,
     imports: [
-      "import '../../data/datasources/${entitySnake}_remote_datasource.dart';",
+      "import 'package:$packageName/features/$featureName/data/datasources/${entitySnake}_remote_datasource.dart';",
     ],
   );
 
@@ -46,6 +49,7 @@ void _addImportsIfMissing({
   var content = file.readAsStringSync();
   for (final imp in imports) {
     if (!content.contains(imp)) {
+      // Insert after the get_it import
       content = content.replaceFirst(
         "import 'package:get_it/get_it.dart';",
         "import 'package:get_it/get_it.dart';\n$imp",
@@ -53,4 +57,16 @@ void _addImportsIfMissing({
     }
   }
   file.writeAsStringSync(content);
+}
+
+String _readPackageName(String projectRoot) {
+  try {
+    final pubspecFile = File('$projectRoot/pubspec.yaml');
+    if (!pubspecFile.existsSync()) return 'app';
+    final content = pubspecFile.readAsStringSync();
+    final yaml = loadYaml(content) as Map;
+    return (yaml['name'] as String?) ?? 'app';
+  } catch (_) {
+    return 'app';
+  }
 }

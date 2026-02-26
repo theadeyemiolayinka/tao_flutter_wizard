@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:mason/mason.dart';
 import 'anchor_patcher.dart';
+import 'package:yaml/yaml.dart';
 
 /// Post-generation hook for the [repository] brick.
 ///
@@ -15,13 +16,13 @@ void run(HookContext context) {
 
   // Resolve paths relative to where `mason make` was run (project root).
   final cwd = Directory.current.path;
-  final injectionPath =
-      '$cwd/lib/features/$featureName/injection.dart';
+  final injectionPath = '$cwd/lib/features/$featureName/injection.dart';
+  final packageName = _readPackageName(cwd);
 
-  // 1. Register remote datasource (above // mason:datasources)
+  // 1. Register remote datasource - interface I{Name}RemoteDataSource, impl {Name}RemoteDataSource
   final datasourceRegistration = '''
-  getIt.registerLazySingleton<${entityName}RemoteDataSource>(
-    () => ${entityName}RemoteDataSourceImpl(dio: getIt()),
+  getIt.registerLazySingleton<I${entityName}RemoteDataSource>(
+    () => ${entityName}RemoteDataSource(dio: getIt()),
   );''';
 
   patchAnchor(
@@ -31,7 +32,7 @@ void run(HookContext context) {
     insertion: datasourceRegistration,
   );
 
-  // 2. Register repository (above // mason:repositories)
+  // 2. Register repository - interface I{Name}Repository, impl {Name}Repository
   final repositoryRegistration = '''
   getIt.registerLazySingleton<I${entityName}Repository>(
     () => ${entityName}Repository(
@@ -46,13 +47,13 @@ void run(HookContext context) {
     insertion: repositoryRegistration,
   );
 
-  // 3. Add import lines to injection.dart if not already there
+  // 3. Add import lines to injection.dart using package: style imports
   _addImportsIfMissing(
     filePath: injectionPath,
     imports: [
-      "import '../../data/datasources/${entitySnake}_remote_datasource.dart';",
-      "import '../../data/repositories/${entitySnake}_repository.dart';",
-      "import '../../domain/repositories/i_${entitySnake}_repository.dart';",
+      "import 'package:$packageName/features/$featureName/data/datasources/${entitySnake}_remote_datasource.dart';",
+      "import 'package:$packageName/features/$featureName/data/repositories/${entitySnake}_repository.dart';",
+      "import 'package:$packageName/features/$featureName/domain/repositories/i_${entitySnake}_repository.dart';",
     ],
   );
 
@@ -79,6 +80,18 @@ void _addImportsIfMissing({
     }
   }
   file.writeAsStringSync(content);
+}
+
+String _readPackageName(String projectRoot) {
+  try {
+    final pubspecFile = File('$projectRoot/pubspec.yaml');
+    if (!pubspecFile.existsSync()) return 'app';
+    final content = pubspecFile.readAsStringSync();
+    final yaml = loadYaml(content) as Map;
+    return (yaml['name'] as String?) ?? 'app';
+  } catch (_) {
+    return 'app';
+  }
 }
 
 String _toSnakeCase(String input) {

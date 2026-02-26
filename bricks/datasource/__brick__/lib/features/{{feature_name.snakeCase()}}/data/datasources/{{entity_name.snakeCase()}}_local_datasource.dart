@@ -1,12 +1,11 @@
 {{#include_local}}
-abstract interface class {{entity_name.pascalCase()}}LocalDataSource {
+abstract interface class I{{entity_name.pascalCase()}}LocalDataSource {
   Future<{{entity_name.pascalCase()}}Model?> getCached{{entity_name.pascalCase()}}(String id);
   Future<void> cache{{entity_name.pascalCase()}}({{entity_name.pascalCase()}}Model model);
   Future<void> clearCache();
 }
 
-class {{entity_name.pascalCase()}}LocalDataSourceImpl
-    implements {{entity_name.pascalCase()}}LocalDataSource {
+class {{entity_name.pascalCase()}}LocalDataSource implements I{{entity_name.pascalCase()}}LocalDataSource {
   // TODO: inject your local storage (e.g. Hive box, SharedPreferences, etc.)
 
   @override

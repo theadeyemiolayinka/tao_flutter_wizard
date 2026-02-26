@@ -6,3 +6,4 @@ dependencies:
   mason: any
   path: any
   recase: any
+  yaml: any

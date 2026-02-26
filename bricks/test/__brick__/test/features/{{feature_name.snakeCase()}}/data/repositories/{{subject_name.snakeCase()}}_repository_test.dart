@@ -2,20 +2,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:your_app/core/error/failure.dart';
-import 'package:your_app/features/{{feature_name.snakeCase()}}/data/datasources/{{subject_name.snakeCase()}}_remote_datasource.dart';
-import 'package:your_app/features/{{feature_name.snakeCase()}}/data/repositories/{{subject_name.snakeCase()}}_repository.dart';
-import 'package:your_app/features/{{feature_name.snakeCase()}}/domain/entities/{{subject_name.snakeCase()}}.dart';
+import 'package:{{package_name}}/core/error/failure.dart';
+import 'package:{{package_name}}/features/{{feature_name.snakeCase()}}/data/datasources/{{subject_name.snakeCase()}}_remote_datasource.dart';
+import 'package:{{package_name}}/features/{{feature_name.snakeCase()}}/data/repositories/{{subject_name.snakeCase()}}_repository.dart';
+import 'package:{{package_name}}/features/{{feature_name.snakeCase()}}/domain/entities/{{subject_name.snakeCase()}}.dart';
 
-class _Mock{{subject_name.pascalCase()}}RemoteDataSource extends Mock
-    implements {{subject_name.pascalCase()}}RemoteDataSource {}
+class _MockI{{subject_name.pascalCase()}}RemoteDataSource extends Mock
+    implements I{{subject_name.pascalCase()}}RemoteDataSource {}
 
 void main() {
-  late _Mock{{subject_name.pascalCase()}}RemoteDataSource mockDataSource;
+  late _MockI{{subject_name.pascalCase()}}RemoteDataSource mockDataSource;
   late {{subject_name.pascalCase()}}Repository repository;
 
   setUp(() {
-    mockDataSource = _Mock{{subject_name.pascalCase()}}RemoteDataSource();
+    mockDataSource = _MockI{{subject_name.pascalCase()}}RemoteDataSource();
     repository = {{subject_name.pascalCase()}}Repository(
       remoteDataSource: mockDataSource,
     );
