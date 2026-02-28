@@ -64,7 +64,25 @@ mason get
 
 ## Bricks
 
-### 1. `feature` - Full Feature Skeleton
+### 1. `core` - Full Core Architecture Skeleton
+
+Generates the boilerplate code for a Flutter project's core folder, including error handling, network clients, configuration management, routing, theming, bloc observation, and dependency injection.
+
+```bash
+mason make core \
+  --use_cases true \
+  --network true \
+  --base_url "https://api.example.com" \
+  --config true \
+  --bloc_observer true \
+  --app_router true \
+  --theme true \
+  --theme_cubit true
+```
+
+---
+
+### 2. `feature` - Full Feature Skeleton
 
 Generates the entire folder structure with anchor-ready `injection.dart` and `routes.dart`.
 
@@ -94,7 +112,7 @@ lib/features/user_profile/
 
 ---
 
-### 2. `entity` - Freezed Entity + Model
+### 3. `entity` - Freezed Entity + Model
 
 Generates a domain entity and its data model with full JSON support and `toEntity`/`fromEntity` conversion.
 
@@ -102,7 +120,7 @@ Generates a domain entity and its data model with full JSON support and `toEntit
 mason make entity \
   --feature_name user_profile \
   --entity_name UserProfile \
-  --fields '[{"name":"id","type":"String","isnullable":false},{"name":"displayName","type":"String","isnullable":false},{"name":"bio","type":"String","isnullable":true},{"name":"createdAt","type":"DateTime","isnullable":false}]'
+  --fields 'id:String|displayName:String|bio:String?|createdAt:DateTime'
 ```
 
 **Generated:**
@@ -156,7 +174,7 @@ class UserProfileModel with _$UserProfileModel {
 
 ---
 
-### 3. `repository` - Interface + Implementation + DataSource Stub
+### 4. `repository` - Interface + Implementation + DataSource Stub
 
 Generates the repository interface, implementation, and remote datasource. **Automatically patches `injection.dart`** via the post-gen hook.
 
@@ -164,7 +182,7 @@ Generates the repository interface, implementation, and remote datasource. **Aut
 mason make repository \
   --feature_name user_profile \
   --entity_name UserProfile \
-  --methods '[{"signature":"getUserProfile(String id)","returnType":"UserProfile","methodName":"getUserProfile"},{"signature":"updateUserProfile(UserProfile profile)","returnType":"Unit","methodName":"updateUserProfile"}]'
+  --methods 'getUserProfile(String id):UserProfile|updateUserProfile(UserProfile profile):Unit'
 ```
 
 **Generated:**
@@ -201,14 +219,14 @@ abstract interface class IUserProfileRepository {
 
 ---
 
-### 4. `usecase` - TaskEither UseCase
+### 5. `usecase` - TaskEither UseCase
 
 ```bash
 mason make usecase \
   --feature_name user_profile \
   --usecase_name GetUserProfile \
   --entity_name UserProfile \
-  --params "final String id;"
+  --params 'id:String'
 ```
 
 **Generated:** `domain/usecases/get_user_profile_usecase.dart`
@@ -239,7 +257,7 @@ class GetUserProfileUseCase
 
 ---
 
-### 5. `bloc` - Freezed Bloc with Concurrency
+### 6. `bloc` - Freezed Bloc with Concurrency
 
 ```bash
 mason make bloc \
@@ -303,12 +321,14 @@ class UserProfileBloc extends HydratedBloc<UserProfileEvent, UserProfileState> {
 
 ---
 
-### 6. `datasource` - Dio Remote DataSource
+### 7. `datasource` - Dio Remote DataSource
 
 ```bash
 mason make datasource \
   --feature_name user_profile \
   --entity_name UserProfile \
+  --crud_datasource true \
+  --methods '' \
   --include_local false
 ```
 
@@ -316,14 +336,13 @@ Generates a full `UserProfileRemoteDataSourceImpl` with `get`, `getAll`, `create
 
 ---
 
-### 7. `route` - GoRouter Route Entry
+### 8. `route` - GoRouter Route Entry
 
 ```bash
 mason make route \
   --feature_name user_profile \
-  --page_name UserProfileDetail \
-  --route_path "/user/:id" \
-  --route_params 'final id = state.pathParameters["id"]!;'
+  --page_name UserProfileDetail___Id \
+  --path_params 'final id = state.pathParameters["id"]!;'
 ```
 
 **Generated:**
@@ -341,7 +360,7 @@ final List<RouteBase> userProfileRoutes = [
 
 ---
 
-### 8. `test` - Test Templates (mocktail)
+### 9. `test` - Test Templates (mocktail)
 
 ```bash
 # Bloc test
@@ -448,29 +467,40 @@ dev_dependencies:
 ## Full Workflow Example
 
 ```bash
-# 1. Scaffold the feature
+# 1. Scaffold the core configuration
+mason make core \
+  --use_cases true \
+  --network true \
+  --base_url "https://api.example.com" \
+  --config true \
+  --bloc_observer true \
+  --app_router true \
+  --theme true \
+  --theme_cubit true
+
+# 2. Scaffold the feature
 mason make feature --feature_name user_profile
 
-# 2. Generate the entity
+# 3. Generate the entity
 mason make entity \
   --feature_name user_profile \
   --entity_name UserProfile \
-  --fields '[{"name":"id","type":"String","isnullable":false},{"name":"name","type":"String","isnullable":false}]'
+  --fields 'id:String|name:String'
 
-# 3. Generate the repository (auto-patches injection.dart)
+# 4. Generate the repository (auto-patches injection.dart)
 mason make repository \
   --feature_name user_profile \
   --entity_name UserProfile \
-  --methods '[{"signature":"getUserProfile(String id)","returnType":"UserProfile","methodName":"getUserProfile"}]'
+  --methods 'getUserProfile(String id):UserProfile'
 
-# 4. Generate a usecase
+# 5. Generate a usecase
 mason make usecase \
   --feature_name user_profile \
   --usecase_name GetUserProfile \
   --entity_name UserProfile \
-  --params "final String id;"
+  --params 'id:String'
 
-# 5. Generate the bloc
+# 6. Generate the bloc
 mason make bloc \
   --feature_name user_profile \
   --bloc_name UserProfile \
@@ -478,18 +508,18 @@ mason make bloc \
   --states '["Initial","Loading","Loaded","Error"]' \
   --hydrated false
 
-# 6. Add a route (auto-patches routes.dart)
+# 7. Add a route (auto-patches routes.dart)
 mason make route \
   --feature_name user_profile \
   --page_name UserProfile \
-  --route_path "/user-profile"
+  --path_params ''
 
-# 7. Generate tests
+# 8. Generate tests
 mason make test --feature_name user_profile --subject_name UserProfile --test_type bloc
 mason make test --feature_name user_profile --subject_name UserProfile --test_type repository
 mason make test --feature_name user_profile --subject_name UserProfile --test_type usecase
 
-# 8. Run code generation
+# 9. Run code generation
 dart run build_runner build --delete-conflicting-outputs
 ```
 
