@@ -13,22 +13,40 @@ Author: [TheAdeyemiOlayinka](https://theadeyemiolayinka.com)
 This framework enforces a strict **Feature-First Clean Architecture** pattern:
 
 ```
-lib/features/{feature}/
-  domain/
-    entities/          ← Pure Dart, no framework deps. Freezed immutable domain types.
-    repositories/      ← Interfaces only. I{Entity}Repository. Never "Impl".
-    usecases/          ← Single-responsibility. TaskEither<Failure, T>.
-  data/
-    models/            ← Freezed + JSON. toEntity() / fromEntity().
-    datasources/       ← Dio HTTP (remote) / storage (local). Never leaks to domain.
-    repositories/      ← Implements domain interface. Maps model → entity.
-  presentation/
-    bloc/              ← Freezed events & states. bloc_concurrency transformer.
-    pages/             ← StatelessWidget + BlocBuilder/Listener. No logic here.
-    widgets/           ← Composable, feature-scoped UI.
-  injection.dart       ← GetIt registrations. Auto-patched via mason:* anchors.
-  routes.dart          ← GoRouter RouteBase list. Auto-patched via mason:routes.
-  l10n/                ← ARB files per locale.
+lib/
+  app/
+    bloc/              ← AppBloc - global orchestration (theme, auth, connectivity...)
+  core/
+    dto/               ← CoreDto interface (data layer contract)
+    error/             ← Failure, exceptions, error_mapper
+    network/           ← DioClient, interceptors, ApiResponse
+    platform/          ← ConnectivityService
+    theme/             ← AppColors, AppTextStyles, AppSpacing, AppRadius, AppTheme
+                          AppTextField, AppButton, AppCheckbox, AppToggle, AppRadio
+    usecase/           ← UseCase<T, Params> + NoParams
+    router/            ← AppRouter (GoRouter)
+    observer/          ← AppBlocObserver
+    config/            ← AppConfig + EnvConfig
+    injection.dart     ← Core-level GetIt registrations
+
+  features/{feature}/
+    domain/
+      entities/        ← Pure Dart, no framework deps. Freezed immutable domain types.
+      repositories/    ← Interfaces only. I{Entity}Repository.
+      usecases/        ← Single-responsibility. TaskEither<Failure, T>.
+    data/
+      dtos/            ← Freezed + JSON. Implements CoreDto. toEntity() / fromEntity().
+      datasources/     ← Dio HTTP (remote) / storage (local). Never leaks to domain.
+      repositories/    ← Implements domain interface. Maps DTO → entity.
+    application/
+      services/        ← Feature services: business logic that spans more than one usecase.
+    presentation/
+      bloc/            ← Freezed events & states. bloc_concurrency transformer.
+      pages/           ← StatelessWidget + BlocBuilder/Listener. No logic here.
+      widgets/         ← Composable, feature-scoped UI.
+    injection.dart     ← GetIt registrations. Auto-patched via mason:: hook anchors.
+    routes.dart        ← GoRouter RouteBase list. Auto-patched via mason:routes.
+    l10n/              ← ARB files per locale.
 ```
 
 ### Core Design Decisions
@@ -38,10 +56,14 @@ lib/features/{feature}/
 | **`I{Name}Repository`** naming | No "Impl" suffix - the implementation *is* the repository. |
 | **`fpdart` `Either` / `TaskEither`**| Typed error handling, no unchecked exceptions in domain. |
 | **`get_it` manual registration** | No codegen magic. Explicit, readable, debuggable DI. |
-| **`Freezed`** everywhere | Immutable entities, models, events, states. copyWith for free. |
+| **`Freezed`** everywhere | Immutable entities, DTOs, models, events, states. copyWith for free. |
 | **`bloc_concurrency`** | `sequential()` by default. Prevents race conditions in event handlers. |
 | **`HydratedBloc`** opt-in | State persistence is an explicit decision, not an afterthought. |
-| **Anchor-comment auto-patching** | `// mason:repositories` etc. ensures DI and routing stay cohesive without manual edits. |
+| **`AppBloc`** for orchestration | Single authoritative source for auth, theme, locale, connectivity. |
+| **`CoreDto`** interface | All DTOs implement a common contract for type-safe serialisation. |
+| **`mason::` hook markers** | Double-colon markers are patched by post_gen hooks for usecases & services. |
+| **Idempotency interceptor** | UUID v4 `Idempotency-Key` header on all mutating requests. |
+| **Retry interceptor** | Exponential back-off (3 retries) for transient network/5xx errors. |
 
 ---
 
@@ -66,19 +88,62 @@ mason get
 
 ### 1. `core` - Full Core Architecture Skeleton
 
-Generates the boilerplate code for a Flutter project's core folder, including error handling, network clients, configuration management, routing, theming, bloc observation, and dependency injection.
+Generates the boilerplate for the entire `core/` and `app/bloc/` folders:
+error handling, advanced Dio network stack, config, theme + design-system, AppBloc, routing, and DI.
 
 ```bash
 mason make core \
   --use_cases true \
   --network true \
   --base_url "https://api.example.com" \
+  --idempotency true \
+  --retry true \
+  --connectivity true \
   --config true \
   --bloc_observer true \
   --app_router true \
   --theme true \
-  --theme_cubit true
+  --design_system true \
+  --app_bloc true
 ```
+
+**Generated network stack (`core/network/`):**
+
+| File | Purpose |
+|---|---|
+| `dio_client.dart` | Pre-configured `Dio` instance with all interceptors |
+| `api_response.dart` | Generic `ApiResponse<T>` envelope (success / paginated / failure) |
+| `interceptors/token_interceptor.dart` | Bearer token attach + queued refresh lock on 401 |
+| `interceptors/idempotency_interceptor.dart` | UUID v4 `Idempotency-Key` header for POST/PUT/PATCH/DELETE |
+| `interceptors/retry_interceptor.dart` | Exponential back-off: 3 retries, 1s/2s/4s delays, skips 4xx |
+| `interceptors/logging_interceptor.dart` | Debug-mode request/response logging |
+| `interceptors/error_interceptor.dart` | Normalises `DioException` → typed `AppException` subclasses |
+
+**Generated platform services (`core/platform/`):**
+
+| File | Purpose |
+|---|---|
+| `connectivity_service.dart` | `ConnectivityService` wrapping `connectivity_plus` - stream + one-shot check |
+
+**Generated design-system (`core/theme/`):**
+
+| File | Purpose |
+|---|---|
+| `app_colors.dart` | Material 3 colour palette tokens |
+| `app_text_styles.dart` | Inter-based `TextTheme` |
+| `app_spacing.dart` | 4-based spacing scale (xxs → xxxl) |
+| `app_radius.dart` | Corner radius tokens + pre-built `BorderRadius` shortcuts |
+| `input_theme.dart` | `InputThemeHelper` - factory methods for all input decoration presets |
+| `app_theme.dart` | Light + dark `ThemeData` using all above tokens |
+| `app_text_field.dart` | `AppTextField` with modes: normal / password / email / phone / textarea |
+| `app_button.dart` | `AppButton` with variants: filled / outlined / text / tonal / destructive / pill |
+| `app_checkbox.dart` | `AppCheckbox` with label, subtitle, tristate |
+| `app_toggle.dart` | `AppToggle` with label, subtitle, custom colours |
+| `app_radio.dart` | `AppRadioGroup<T>` - typed, with labels and subtitles |
+
+**Generated `app/bloc/`:**
+
+See **[AppBloc](#appbloc---app-orchestration)** section below.
 
 ---
 
@@ -93,7 +158,7 @@ mason make feature --feature_name user_profile
 **Generated output:**
 ```
 lib/features/user_profile/
-  injection.dart          ← // mason:datasources, // mason:repositories, // mason:blocs
+  injection.dart          ← // mason::datasources / ::repositories / ::services / ::usecases / ::blocs
   routes.dart             ← // mason:routes
   l10n/user_profile_en.arb
   presentation/pages/user_profile_page.dart
@@ -255,6 +320,126 @@ class GetUserProfileUseCase
 }
 ```
 
+> **Auto-injection:** the post_gen hook patches `features/user_profile/injection.dart`
+> under the `// mason::usecases` marker automatically.
+
+---
+
+### 10. `dto` - Freezed Data Transfer Object
+
+Generates a Freezed + `json_serializable` DTO in the feature's **data layer**,
+implementing `CoreDto` (`core/dto/core_dto.dart`) and scaffolding `fromEntity`/`toEntity`.
+
+```bash
+mason make dto \
+  --feature_name user_profile \
+  --dto_name UserProfile \
+  --entity_name UserProfile \
+  --fields 'id:String|name:String|bio:String?'
+```
+
+**Generated:**
+- `core/dto/core_dto.dart` - abstract interface (generated once by `core` brick or first dto run)
+- `features/user_profile/data/dtos/user_profile_dto.dart`
+
+```dart
+@freezed
+class UserProfileDto
+    with _$UserProfileDto
+    implements CoreDto<UserProfileDto> {
+  const UserProfileDto._();
+  const factory UserProfileDto({
+    required String id,
+    required String name,
+    String? bio,
+  }) = _UserProfileDto;
+
+  factory UserProfileDto.fromJson(Map<String, dynamic> json) =>
+      _$UserProfileDtoFromJson(json);
+
+  factory UserProfileDto.fromEntity(UserProfile entity) =>
+      UserProfileDto(id: entity.id, name: entity.name, bio: entity.bio);
+
+  UserProfile toEntity() =>
+      UserProfile(id: id, name: name, bio: bio);
+
+  @override
+  Map<String, dynamic> toJson() => _$UserProfileDtoToJson(this);
+}
+```
+
+---
+
+### 11. `service` - Feature Application Service
+
+Generates a service interface + implementation in the **application layer**
+(`features/{name}/application/services/`) and auto-registers it in `injection.dart`.
+
+```bash
+mason make service \
+  --feature_name auth \
+  --service_name AuthSession
+```
+
+**Generated:**
+- `features/auth/application/services/auth_session_service.dart` - abstract interface
+- `features/auth/application/services/auth_session_service_impl.dart` - concrete impl
+
+**Auto-patched `features/auth/injection.dart`:**
+```dart
+void registerAuthDependencies(GetIt getIt) {
+  // mason::services
+  getIt.registerLazySingleton<AuthSessionService>(
+    () => AuthSessionServiceImpl(),
+  );
+  ...
+}
+```
+
+---
+
+### AppBloc - App Orchestration
+
+Generated by `mason make core --app_bloc true` into `lib/app/bloc/`.
+
+`AppBloc` is a `HydratedBloc` that owns all cross-cutting app concerns:
+
+| Field | Type | Persisted | Description |
+|---|---|---|---|
+| `themeMode` | `ThemeMode` | ✅ | Light / dark / system |
+| `locale` | `Locale?` | ✅ | App locale (null = device default) |
+| `isFirstLaunch` | `bool` | ✅ | Cleared after onboarding |
+| `authStatus` | `AuthStatus` | ❌ | `unknown` / `authenticated` / `unauthenticated` |
+| `connectivityStatus` | `ConnectivityStatus` | ❌ | `online` / `offline` |
+| `forceUpdateRequired` | `bool` | ❌ | From remote config |
+
+**Events:**
+```dart
+AppEvent.started()
+AppEvent.themeModeChanged(ThemeMode.dark)
+AppEvent.localeChanged(Locale('fr'))
+AppEvent.authStatusChanged(AuthStatus.authenticated)
+AppEvent.connectivityChanged(ConnectivityStatus.offline)
+AppEvent.forceUpdateFlagReceived(required: true)
+AppEvent.firstLaunchAcknowledged()
+```
+
+**Usage in `main.dart`:**
+```dart
+BlocProvider(
+  create: (_) => getIt<AppBloc>()..add(const AppEvent.started()),
+  child: BlocBuilder<AppBloc, AppState>(
+    builder: (context, state) => MaterialApp.router(
+      themeMode: state.themeMode,
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      locale: state.locale,
+      routerConfig: appRouter,
+    ),
+  ),
+)
+```
+
 ---
 
 ### 6. `bloc` - Freezed Bloc with Concurrency
@@ -392,11 +577,17 @@ Every `injection.dart` generated by the `feature` brick contains these anchors:
 
 ```dart
 void registerUserProfileDependencies(GetIt getIt) {
-  // mason:datasources
-  // mason:repositories
-  // mason:blocs
+  // mason::datasources     ← patched by: datasource brick
+  // mason::repositories    ← patched by: repository brick
+  // mason::services        ← patched by: service brick (post_gen hook)
+  // mason::usecases        ← patched by: usecase brick (post_gen hook)
+  // mason::blocs           ← patched by: bloc brick
 }
 ```
+
+> **Note:** `mason::` (double-colon) markers are used by post_gen hooks from
+> the `usecase` and `service` bricks. Single-colon `mason:` markers are
+> used by bricks that patch files directly during generation (datasource, repository).
 
 Every `routes.dart` contains:
 
@@ -408,16 +599,14 @@ final List<RouteBase> userProfileRoutes = [
 
 ### Hook Strategy
 
-1. **`hook.dart`** - Dart script run by Mason post-generation.
-2. **`anchor_patcher.dart`** - Shared utility with idempotency checks.
-3. **Strategy:**
-   - Read target file into string.
-   - Check if file exists → fail gracefully with warning if missing.
-   - Check if anchor exists → fail gracefully if missing.
-   - Check if insertion already present → skip silently (idempotent).
-   - `replaceFirst(anchor, '$insertion\n  $anchor')` - inserts above anchor.
-   - Write back atomically.
-4. **Import patching** - Adds missing `import` lines after the `get_it` import line.
+1. **`pre_gen.dart`** - Reads `pubspec.yaml` for `package_name`, parses field/param lists.
+2. **`post_gen.dart`** - Patches target files (injection.dart, routes.dart) via anchor replacement.
+3. **Idempotency:**
+   - Checks if file exists → graceful warning if missing.
+   - Checks if anchor exists → graceful warning if missing.
+   - Checks if insertion already present → silently skips.
+   - Uses `replaceFirst(anchor, '$insertion\n  $anchor')` - inserts above anchor and preserves it.
+4. **Import patching** - adds missing `import` statements at the top of the file.
 
 ---
 
@@ -442,17 +631,26 @@ dependencies:
   # Networking
   dio: ^5.4.3+1
 
+  # Connectivity
+  connectivity_plus: ^6.0.3
+
+  # Idempotency key generation
+  uuid: ^4.4.0
+
   # Routing
   go_router: ^14.2.7
 
   # Serialization
-  freezed_annotation: ^2.4.1
+  freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0
+
+  # Fonts
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   # Code generation
-  build_runner: ^2.4.9
-  freezed: ^2.5.2
+  build_runner: ^2.4.13
+  freezed: ^2.5.7
   json_serializable: ^6.8.0
 
   # Testing
@@ -467,59 +665,74 @@ dev_dependencies:
 ## Full Workflow Example
 
 ```bash
-# 1. Scaffold the core configuration
+# 1. Scaffold the core architecture
 mason make core \
   --use_cases true \
   --network true \
   --base_url "https://api.example.com" \
+  --idempotency true \
+  --retry true \
+  --connectivity true \
   --config true \
   --bloc_observer true \
   --app_router true \
   --theme true \
-  --theme_cubit true
+  --design_system true \
+  --app_bloc true
 
-# 2. Scaffold the feature
+# 2. Scaffold a feature
 mason make feature --feature_name user_profile
 
-# 3. Generate the entity
+# 3. Generate the domain entity
 mason make entity \
   --feature_name user_profile \
   --entity_name UserProfile \
-  --fields 'id:String|name:String'
+  --fields 'id:String|name:String|bio:String?'
 
-# 4. Generate the repository (auto-patches injection.dart)
+# 4. Generate a DTO (data layer, with fromEntity/toEntity stubs)
+mason make dto \
+  --feature_name user_profile \
+  --dto_name UserProfile \
+  --entity_name UserProfile \
+  --fields 'id:String|name:String|bio:String?'
+
+# 5. Generate the repository (auto-patches injection.dart)
 mason make repository \
   --feature_name user_profile \
   --entity_name UserProfile \
   --methods 'getUserProfile(String id):UserProfile'
 
-# 5. Generate a usecase
+# 6. Generate a feature service (auto-patches injection.dart under ::services)
+mason make service \
+  --feature_name user_profile \
+  --service_name UserProfileCache
+
+# 7. Generate a usecase (auto-patches injection.dart under ::usecases)
 mason make usecase \
   --feature_name user_profile \
   --usecase_name GetUserProfile \
   --entity_name UserProfile \
   --params 'id:String'
 
-# 6. Generate the bloc
+# 8. Generate the bloc
 mason make bloc \
   --feature_name user_profile \
   --bloc_name UserProfile \
-  --events '["Load","Update"]' \
-  --states '["Initial","Loading","Loaded","Error"]' \
+  --events 'Load,Update,Clear' \
+  --states 'Initial,Loading,Loaded,Error' \
   --hydrated false
 
-# 7. Add a route (auto-patches routes.dart)
+# 9. Add a route (auto-patches routes.dart)
 mason make route \
   --feature_name user_profile \
   --page_name UserProfile \
   --path_params ''
 
-# 8. Generate tests
+# 10. Generate tests
 mason make test --feature_name user_profile --subject_name UserProfile --test_type bloc
-mason make test --feature_name user_profile --subject_name UserProfile --test_type repository
 mason make test --feature_name user_profile --subject_name UserProfile --test_type usecase
 
-# 9. Run code generation
+# 11. Run code generation
 dart run build_runner build --delete-conflicting-outputs
 ```
 
@@ -531,14 +744,17 @@ dart run build_runner build --delete-conflicting-outputs
 |---|---|---|
 | Feature dir | `snake_case` | `user_profile` |
 | Entity | `PascalCase` | `UserProfile` |
+| DTO | `{Name}Dto` | `UserProfileDto` |
 | Repository interface | `I{Entity}Repository` | `IUserProfileRepository` |
 | Repository implementation | `{Entity}Repository` | `UserProfileRepository` |
 | Remote datasource | `{Entity}RemoteDataSource` | `UserProfileRemoteDataSource` |
 | Bloc | `{Name}Bloc` | `UserProfileBloc` |
 | UseCase | `{Action}{Entity}UseCase` | `GetUserProfileUseCase` |
+| Feature service interface | `{Name}Service` | `UserProfileCacheService` |
+| Feature service impl | `{Name}ServiceImpl` | `UserProfileCacheServiceImpl` |
 | Route file | `{name}_route.dart` | `user_profile_route.dart` |
 
-> Never use the `Impl` suffix. The concrete class *is* the implementation.
+> Never use the `Impl` suffix except for service implementations - the concrete class *is* the repository.
 
 ---
 

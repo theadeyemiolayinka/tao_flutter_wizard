@@ -1,0 +1,24 @@
+name: dto
+description: Generates a Freezed + json_serializable DTO in the data layer of a feature, with a fromEntity/toEntity scaffold
+version: 0.1.0+1
+environment:
+  mason: ">=0.1.0-dev.52 <1.0.0"
+vars:
+  feature_name:
+    type: string
+    description: Feature this DTO belongs to (snake_case)
+    prompt: "Feature name (snake_case):"
+  dto_name:
+    type: string
+    description: DTO name (PascalCase, without 'Dto' suffix)
+    prompt: "DTO name (PascalCase, e.g. UserProfile):"
+  entity_name:
+    type: string
+    description: Domain entity this DTO maps to (PascalCase)
+    prompt: "Domain entity name (PascalCase, same as dto_name if same):"
+  fields:
+    type: list
+    description: "DTO fields as 'name:type' pairs (use ? suffix for nullable). Leave empty for no fields."
+    prompt: "Fields (name:type separated by |, e.g. id:String|name:String|age:int? - blank for none):"
+    separator: "|"
+    default: []

@@ -15,6 +15,6 @@ vars:
   path_params:
     type: list
     description: "Path parameter extractions (one per param). Format: 'final paramName = state.pathParameters[\"paramName\"]!;'"
-    prompt: "Path params to extract from state (e.g. 'final id = state.pathParameters[\"id\"]!;' — one per entry, blank to skip):"
+    prompt: "Path params to extract from state (e.g. 'final id = state.pathParameters[\"id\"]!;' - one per entry, blank to skip):"
     separator: "|"
     default: []

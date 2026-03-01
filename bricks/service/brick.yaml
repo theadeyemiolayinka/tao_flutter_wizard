@@ -1,0 +1,14 @@
+name: service
+description: Generates a feature service interface + implementation in the application layer, and auto-registers it in the feature's injection.dart
+version: 0.1.0+1
+environment:
+  mason: ">=0.1.0-dev.52 <1.0.0"
+vars:
+  feature_name:
+    type: string
+    description: Feature this service belongs to (snake_case)
+    prompt: "Feature name (snake_case):"
+  service_name:
+    type: string
+    description: Service name (PascalCase, without 'Service' suffix)
+    prompt: "Service name (PascalCase, e.g. AuthSession):"

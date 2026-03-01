@@ -20,7 +20,7 @@ vars:
   methods:
     type: list
     description: "Custom methods in 'methodName:ReturnType:param1Name/param1Type,param2Name/param2Type' format (ignored when crud_datasource is true)"
-    prompt: "Methods (e.g. login:User:email/String,password/String|logout:void: — leave blank to skip):"
+    prompt: "Methods (e.g. login:User:email/String,password/String|logout:void: - leave blank to skip):"
     separator: "|"
     default: []
   include_local:

@@ -1,4 +1,6 @@
 bricks:
+  core:
+    path: bricks/core
   feature:
     path: bricks/feature
   entity:
@@ -7,13 +9,15 @@ bricks:
     path: bricks/repository
   usecase:
     path: bricks/usecase
+  dto:
+    path: bricks/dto
+  service:
+    path: bricks/service
   bloc:
     path: bricks/bloc
   datasource:
     path: bricks/datasource
   route:
     path: bricks/route
-  core:
-    path: bricks/core
   test:
     path: bricks/test

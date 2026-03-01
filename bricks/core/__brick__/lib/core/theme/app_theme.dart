@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:{{package_name}}/core/theme/app_colors.dart';
+import 'package:{{package_name}}/core/theme/app_radius.dart';
+import 'package:{{package_name}}/core/theme/app_spacing.dart';
 import 'package:{{package_name}}/core/theme/app_text_styles.dart';
+import 'package:{{package_name}}/core/theme/input_theme.dart';
 
 abstract final class AppTheme {
   static ThemeData get light => ThemeData(
@@ -47,37 +50,72 @@ abstract final class AppTheme {
         cardTheme: CardThemeData(
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.card,
             side: const BorderSide(color: AppColors.outlineVariant),
           ),
+          margin: const EdgeInsets.all(AppSpacing.xs),
         ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: AppColors.surfaceVariant.withAlpha(80),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.outline),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.outlineVariant),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.primary, width: 2),
-          ),
-        ),
+        inputDecorationTheme: InputThemeHelper.themeData,
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             elevation: 0,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.smMd,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: AppRadius.button,
+            ),
           ),
         ),
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.smMd,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: AppRadius.button,
+            ),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.smMd,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: AppRadius.button,
+            ),
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: AppRadius.button,
+            ),
+          ),
+        ),
+        dialogTheme: DialogThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.dialog,
+          ),
+          elevation: 3,
+        ),
+        bottomSheetTheme: BottomSheetThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.bottomSheet,
+          ),
+          elevation: 2,
+        ),
+        chipTheme: ChipThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.chip,
           ),
         ),
       );
@@ -109,6 +147,56 @@ abstract final class AppTheme {
           backgroundColor: AppColors.surfaceDark,
           foregroundColor: AppColors.onSurfaceDark,
           systemOverlayStyle: SystemUiOverlayStyle.light,
+        ),
+        cardTheme: CardThemeData(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.card,
+            side: const BorderSide(
+              color: AppColors.surfaceVariantDark,
+            ),
+          ),
+          margin: const EdgeInsets.all(AppSpacing.xs),
+        ),
+        inputDecorationTheme: InputThemeHelper.themeData,
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.smMd,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: AppRadius.button,
+            ),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.smMd,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: AppRadius.button,
+            ),
+          ),
+        ),
+        dialogTheme: DialogThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.dialog,
+          ),
+          elevation: 3,
+        ),
+        bottomSheetTheme: BottomSheetThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.bottomSheet,
+          ),
+          elevation: 2,
+        ),
+        chipTheme: ChipThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.chip,
+          ),
         ),
       );
 }

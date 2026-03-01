@@ -1,9 +1,13 @@
 import 'package:get_it/get_it.dart';
 
 void register{{feature_name.pascalCase()}}Dependencies(GetIt getIt) {
-  // mason:datasources
+  // mason::datasources
 
-  // mason:repositories
+  // mason::repositories
 
-  // mason:blocs
+  // mason::services
+
+  // mason::usecases
+
+  // mason::blocs
 }

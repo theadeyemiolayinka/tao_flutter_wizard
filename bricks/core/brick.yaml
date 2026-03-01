@@ -1,6 +1,6 @@
 name: core
-description: Interactively generates Flutter core folder boilerplate — error handling, network, config, theme, routing, DI
-version: 0.1.0+1
+description: Interactively generates Flutter core folder boilerplate - error handling, network, config, theme, routing, DI
+version: 0.1.0+2
 environment:
   mason: ">=0.1.0-dev.52 <1.0.0"
 vars:
@@ -11,7 +11,7 @@ vars:
     prompt: "Generate error handling & UseCase base classes?"
   network:
     type: boolean
-    description: Generate Dio network client with logging + token interceptors
+    description: Generate Dio network client with logging, token-refresh, retry, and error interceptors
     default: true
     prompt: "Generate Dio network client with interceptors?"
   base_url:
@@ -19,6 +19,21 @@ vars:
     description: Base API URL used in api_constants.dart
     default: "https://api.example.com"
     prompt: "Base API URL:"
+  idempotency:
+    type: boolean
+    description: Add IdempotencyInterceptor (Idempotency-Key UUID header for mutating requests)
+    default: true
+    prompt: "Add IdempotencyInterceptor (recommended for POST/PUT/PATCH)?"
+  retry:
+    type: boolean
+    description: Add RetryInterceptor with exponential back-off (3 retries, 5xx + network errors)
+    default: true
+    prompt: "Add RetryInterceptor with exponential back-off?"
+  connectivity:
+    type: boolean
+    description: Generate ConnectivityService (connectivity_plus wrapper) for network status monitoring
+    default: true
+    prompt: "Generate ConnectivityService?"
   config:
     type: boolean
     description: Generate app config and env setup (envied)
@@ -36,11 +51,16 @@ vars:
     prompt: "Generate AppRouter (GoRouter)?"
   theme:
     type: boolean
-    description: Generate theme system with colors, text styles, and light/dark ThemeData
+    description: Generate theme system with colors, text styles, spacing, radius tokens and light/dark ThemeData
     default: true
-    prompt: "Generate theme system (colors, text styles, light/dark)?"
-  theme_cubit:
+    prompt: "Generate theme system (colors, text styles, spacing, radius, light/dark)?"
+  design_system:
     type: boolean
-    description: Include ThemeCubit + HydratedCubit for runtime theme switching
+    description: Generate reusable UI widget library (AppTextField, AppButton, AppCheckbox, AppToggle, AppRadio)
     default: true
-    prompt: "Include ThemeCubit for runtime theme switching?"
+    prompt: "Generate design-system widgets (AppTextField, AppButton, AppCheckbox, AppToggle, AppRadio)?"
+  app_bloc:
+    type: boolean
+    description: Generate AppBloc (HydratedBloc) for app-level orchestration - theme, locale, auth status, connectivity, first-launch, force-update
+    default: true
+    prompt: "Generate AppBloc for app orchestration (theme, auth, locale, connectivity, force-update)?"
