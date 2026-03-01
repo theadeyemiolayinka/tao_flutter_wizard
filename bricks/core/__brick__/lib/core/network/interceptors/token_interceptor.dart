@@ -3,6 +3,8 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 
+import 'package:{{package_name}}/core/network/request_extras.dart';
+
 import 'package:{{package_name}}/core/error/exceptions.dart';
 
 /// Handles 401 token refresh with a lock to prevent thundering-herd.
@@ -42,9 +44,13 @@ class TokenInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final token = await _onGetAccessToken();
-    if (token != null) {
-      options.headers['Authorization'] = 'Bearer $token';
+    // Caller can opt out of auth header for public endpoints
+    final skipAuth = options.extra[RequestExtras.skipAuth] == true;
+    if (!skipAuth) {
+      final token = await _onGetAccessToken();
+      if (token != null) {
+        options.headers['Authorization'] = 'Bearer $token';
+      }
     }
     handler.next(options);
   }
@@ -59,8 +65,8 @@ class TokenInterceptor extends Interceptor {
       return;
     }
 
-    // Already retried with refreshed token - don't loop
-    if (err.requestOptions.extra['_token_refreshed'] == true) {
+    // Already replayed with refreshed token - don't loop
+    if (err.requestOptions.extra[RequestExtras.tokenRefreshed] == true) {
       handler.next(err);
       return;
     }
@@ -100,7 +106,7 @@ class TokenInterceptor extends Interceptor {
       await _onTokenRefreshed(newToken);
       _resolveQueue(newToken);
 
-      err.requestOptions.extra['_token_refreshed'] = true;
+      err.requestOptions.extra[RequestExtras.tokenRefreshed] = true;
       handler.resolve(await _retryWithToken(err.requestOptions, newToken));
     } catch (_) {
       await _onRefreshFailed();

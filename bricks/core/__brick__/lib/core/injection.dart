@@ -2,7 +2,6 @@ import 'package:get_it/get_it.dart';
 
 void registerCoreDependencies(GetIt getIt) {
   // mason:core-network
-  // Network client and interceptors are registered here by the core brick.
   // getIt.registerSingleton<DioClient>(DioClient());
 
   // mason:core-connectivity

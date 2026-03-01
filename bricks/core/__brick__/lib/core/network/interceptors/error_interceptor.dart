@@ -1,4 +1,6 @@
 {{#network}}
+// ignore_for_file: unreachable_switch_default
+
 import 'package:dio/dio.dart';
 
 import 'package:{{package_name}}/core/error/exceptions.dart';
@@ -34,7 +36,7 @@ class ErrorInterceptor extends Interceptor {
         final message = _extractMessage(err);
 
         if (status == 401) {
-          return ServerException(
+          return UnauthorizedException(
             message: message ?? 'Unauthorised. Please log in again.',
             statusCode: status,
           );

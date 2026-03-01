@@ -113,9 +113,10 @@ mason make core \
 |---|---|
 | `dio_client.dart` | Pre-configured `Dio` instance with all interceptors |
 | `api_response.dart` | Generic `ApiResponse<T>` envelope (success / paginated / failure) |
-| `interceptors/token_interceptor.dart` | Bearer token attach + queued refresh lock on 401 |
-| `interceptors/idempotency_interceptor.dart` | UUID v4 `Idempotency-Key` header for POST/PUT/PATCH/DELETE |
-| `interceptors/retry_interceptor.dart` | Exponential back-off: 3 retries, 1s/2s/4s delays, skips 4xx |
+| `request_extras.dart` | `RequestExtras` — typed constants for per-request interceptor control |
+| `interceptors/token_interceptor.dart` | Bearer token attach (`skipAuth`) + queued refresh lock on 401 |
+| `interceptors/idempotency_interceptor.dart` | UUID v4 `Idempotency-Key` — opt-in per-request or opt-out globally |
+| `interceptors/retry_interceptor.dart` | Exponential back-off: 3 retries, 1s/2s/4s delays, `enableRetry` opt-in |
 | `interceptors/logging_interceptor.dart` | Debug-mode request/response logging |
 | `interceptors/error_interceptor.dart` | Normalises `DioException` → typed `AppException` subclasses |
 
@@ -140,6 +141,23 @@ mason make core \
 | `app_checkbox.dart` | `AppCheckbox` with label, subtitle, tristate |
 | `app_toggle.dart` | `AppToggle` with label, subtitle, custom colours |
 | `app_radio.dart` | `AppRadioGroup<T>` - typed, with labels and subtitles |
+
+**Generated `core/ui/` (dialog + toast system):**
+
+| File | Purpose |
+|---|---|
+| `ui/dialogs/app_dialogs.dart` | `AppDialogs` service: `confirm`, `alert`, `showBottomSheet`, `showScrollableBottomSheet` |
+| `ui/dialogs/app_popup_panel.dart` | `AppPopupPanel` (non-blocking popup) + `AppBackdrop` (inline scrim overlay) |
+| `ui/toasts/app_toast.dart` | `AppToast` service: `success`, `error`, `info`, `warning` via toastification |
+
+**Generated `app/shell/`:**
+
+| Class | Description |
+|---|---|
+| `AppShell` | Bare Scaffold wrapper (base shell) |
+| `BottomNavShell` | Shell with `NavigationBar` + `StatefulNavigationShell` |
+| `SideNavShell` | Shell with `NavigationRail` for tablet/desktop |
+| `AdaptiveNavShell` | Switches between bottom/rail at a configurable breakpoint (default 600px) |
 
 **Generated `app/bloc/`:**
 
@@ -569,6 +587,150 @@ mason make test \
 
 ---
 
+## RequestExtras - Per-Request Interceptor Control
+
+`RequestExtras` (`core/network/request_extras.dart`) provides typed keys for `RequestOptions.extra`
+to control interceptor behaviour on a per-request basis, without magic strings.
+
+| Key | Interceptor | Effect |
+|---|---|---|
+| `RequestExtras.enableIdempotency` | `IdempotencyInterceptor` | `true` = attach key (opt-in) / `false` = skip (opt-out) |
+| `RequestExtras.enableRetry` | `RetryInterceptor` | `true` = retry this request |
+| `RequestExtras.skipAuth` | `TokenInterceptor` | `true` = skip `Authorization` header (public endpoints) |
+| `RequestExtras.skipErrorNormalisation` | `ErrorInterceptor` | `true` = propagate raw `DioException` |
+
+```dart
+// Enable idempotency for a specific order creation call
+dio.post('/orders', options: Options(
+  extra: {RequestExtras.enableIdempotency: true},
+));
+
+// Never retry a payment capture (side-effectful, non-idempotent)
+dio.post('/payments/capture', options: Options(
+  extra: {RequestExtras.enableRetry: false},
+));
+
+// Call a public endpoint without sending auth credentials
+dio.get('/public/rates', options: Options(
+  extra: {RequestExtras.skipAuth: true},
+));
+```
+
+> **Internal keys** (`_retry_attempt`, `_token_refreshed`) are set by interceptors themselves.
+> Never set these manually.
+
+---
+
+## App Shell System
+
+Generated in `lib/app/shell/app_shell.dart`.
+
+Use shells with GoRouter's `StatefulShellRoute.indexedStack` for multi-branch navigation:
+
+```dart
+StatefulShellRoute.indexedStack(
+  builder: (context, state, navigationShell) => AdaptiveNavShell(
+    navigationShell: navigationShell,
+    breakpoint: 600,
+    bottomDestinations: const [
+      NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Home'),
+      NavigationDestination(icon: Icon(Icons.search_outlined), label: 'Search'),
+      NavigationDestination(icon: Icon(Icons.person_outlined), label: 'Profile'),
+    ],
+    railDestinations: const [
+      NavigationRailDestination(icon: Icon(Icons.home_outlined), label: Text('Home')),
+      NavigationRailDestination(icon: Icon(Icons.search_outlined), label: Text('Search')),
+      NavigationRailDestination(icon: Icon(Icons.person_outlined), label: Text('Profile')),
+    ],
+  ),
+  branches: [homeBranch, searchBranch, profileBranch],
+)
+```
+
+---
+
+## Dialog & Toast System
+
+### AppDialogs (`core/ui/dialogs/app_dialogs.dart`)
+
+All dialogs run through `AppDialogs` so backdrop colour, border radius, and
+animation are consistent everywhere.
+
+```dart
+// Confirmation dialog
+final result = await AppDialogs.confirm(
+  context,
+  title: 'Delete post?',
+  body: 'This cannot be undone.',
+  confirmLabel: 'Delete',
+  isDestructive: true,
+);
+if (result == AppDialogResult.confirmed) { ... }
+
+// Simple alert
+await AppDialogs.alert(context, title: 'Done', body: 'Changes saved.');
+
+// Standard bottom sheet
+await AppDialogs.showBottomSheet(context, child: MyPickerContent());
+
+// Draggable scrollable bottom sheet
+await AppDialogs.showScrollableBottomSheet(
+  context,
+  initialSize: 0.5,
+  builder: (ctx, scrollController) => SingleChildScrollView(
+    controller: scrollController,
+    child: MyLongContent(),
+  ),
+);
+```
+
+### AppPopupPanel & AppBackdrop (`core/ui/dialogs/app_popup_panel.dart`)
+
+For lightweight popups that don't need the Navigator stack (context menus, filters, pickers):
+
+```dart
+Stack(
+  children: [
+    MyPageContent(),
+    if (_showFilter)
+      AppBackdrop(
+        onDismiss: () => setState(() => _showFilter = false),
+        child: Center(
+          child: AppPopupPanel(
+            title: 'Sort by',
+            onDismiss: () => setState(() => _showFilter = false),
+            child: AppRadioGroup<SortOrder>(...),
+          ),
+        ),
+      ),
+  ],
+)
+```
+
+### AppToast (`core/ui/toasts/app_toast.dart`)
+
+**Requires** wrapping `MaterialApp` with `Toastification()`:
+```dart
+Toastification(
+  child: MaterialApp.router(...)
+)
+```
+
+```dart
+AppToast.success(context, message: 'Profile saved!');
+AppToast.error(context, message: 'Network error. Please try again.');
+AppToast.info(context, message: 'Syncing in the background...');
+AppToast.warning(context, message: 'Low storage space detected.');
+
+// Dismiss programmatically
+final item = AppToast.info(context, message: 'Loading...');
+// later...
+AppToast.dismiss(item);
+AppToast.dismissAll();
+```
+
+---
+
 ## Auto-Patching System
 
 ### Anchor Comments
@@ -644,14 +806,25 @@ dependencies:
   freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0
 
+  # Env
+  envied: ^1.3.1
+
   # Fonts
   google_fonts: ^6.2.1
+
+  # Storage (for HydratedBloc)
+  path_provider: ^2.1.5
+
+  # Toast notifications
+  toastification: ^2.1.0
 
 dev_dependencies:
   # Code generation
   build_runner: ^2.4.13
   freezed: ^2.5.7
   json_serializable: ^6.8.0
+  envied_generator: ^1.3.1
+
 
   # Testing
   flutter_test:

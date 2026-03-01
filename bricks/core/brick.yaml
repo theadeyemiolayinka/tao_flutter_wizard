@@ -64,3 +64,8 @@ vars:
     description: Generate AppBloc (HydratedBloc) for app-level orchestration - theme, locale, auth status, connectivity, first-launch, force-update
     default: true
     prompt: "Generate AppBloc for app orchestration (theme, auth, locale, connectivity, force-update)?"
+  toastification:
+    type: boolean
+    description: Generate AppToast service wrapping toastification package (success, error, info, warning helpers)
+    default: true
+    prompt: "Generate AppToast service (toastification)?"

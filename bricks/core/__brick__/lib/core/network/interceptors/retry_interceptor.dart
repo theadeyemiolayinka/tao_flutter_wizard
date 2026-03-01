@@ -4,6 +4,8 @@ import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
+import 'package:{{package_name}}/core/network/request_extras.dart';
+
 /// Automatically retries failed requests using exponential back-off.
 ///
 /// Retry policy:
@@ -11,6 +13,14 @@ import 'package:flutter/foundation.dart';
 /// - Applies only to network-level errors and 5xx server errors
 /// - Skips retry for 4xx client errors (no point retrying bad requests)
 /// - Back-off delays: 1s, 2s, 4s (doubles each attempt, capped at [maxDelayMs])
+///
+/// **Per-request opt-out:**
+/// ```dart
+/// // Never retry this call (e.g. payment capture)
+/// dio.post('/payments/capture', options: Options(
+///   extra: {RequestExtras.enableRetry: false},
+/// ));
+/// ```
 ///
 /// Usage - add to Dio interceptors BEFORE [LoggingInterceptor]:
 /// ```dart
@@ -34,7 +44,14 @@ class RetryInterceptor extends Interceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    final attempt = (err.requestOptions.extra['_retry_attempt'] as int?) ?? 0;
+    // Bail if caller has explicitly opted out of retry
+    if (err.requestOptions.extra[RequestExtras.enableRetry] == false) {
+      handler.next(err);
+      return;
+    }
+
+    final attempt =
+        (err.requestOptions.extra[RequestExtras.retryAttempt] as int?) ?? 0;
 
     final shouldRetry = _isRetryable(err) && attempt < maxAttempts;
 
@@ -57,7 +74,7 @@ class RetryInterceptor extends Interceptor {
 
     try {
       final options = err.requestOptions;
-      options.extra['_retry_attempt'] = attempt + 1;
+      options.extra[RequestExtras.retryAttempt] = attempt + 1;
 
       final response = await _dio.fetch<dynamic>(options);
       handler.resolve(response);
@@ -67,17 +84,14 @@ class RetryInterceptor extends Interceptor {
   }
 
   bool _isRetryable(DioException err) {
-    // Network-level errors (no response)
     if (err.type == DioExceptionType.connectionError ||
         err.type == DioExceptionType.connectionTimeout ||
         err.type == DioExceptionType.receiveTimeout ||
         err.type == DioExceptionType.sendTimeout) {
       return true;
     }
-    // Server errors (5xx) are retryable; 4xx are not
     final statusCode = err.response?.statusCode;
     if (statusCode != null && statusCode >= 500) return true;
-
     return false;
   }
 }

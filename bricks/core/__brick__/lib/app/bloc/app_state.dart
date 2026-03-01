@@ -25,7 +25,7 @@ enum AuthStatus {
 /// Persisted fields (via HydratedBloc): [themeMode], [locale], [isFirstLaunch].
 /// Runtime-only fields (not persisted): [authStatus], [connectivityStatus], [forceUpdateRequired].
 @freezed
-class AppState with _$AppState {
+abstract class AppState with _$AppState {
   const AppState._();
 
   const factory AppState({
