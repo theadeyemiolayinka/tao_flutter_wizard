@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:{{package_name}}/core/theme/app_spacing.dart';
+import 'package:go_router/go_router.dart';
 
 /// Base shell for the app's primary navigation scaffold.
 ///

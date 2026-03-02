@@ -13,6 +13,7 @@ Failure mapExceptionToFailure(Object error) {
     ServerException e => Failure.server(message: e.message),
     CacheException e => Failure.cache(message: e.message),
     NetworkException e => Failure.network(message: e.message),
+    UnauthorizedException e => Failure.unauthorized(message: e.message),
     ValidationException e => Failure.validation(message: e.message),
     _ => Failure.server(message: error.toString()),
   };
