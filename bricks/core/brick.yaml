@@ -69,3 +69,8 @@ vars:
     description: Generate AppToast service wrapping toastification package (success, error, info, warning helpers)
     default: true
     prompt: "Generate AppToast service (toastification)?"
+  setup_main:
+    type: boolean
+    description: Generate/overwrite lib/main.dart and lib/app.dart wired to AppBloc, HydratedBloc, GetIt and GoRouter
+    default: false
+    prompt: "Generate main.dart + app.dart (wired to AppBloc, HydratedBloc, GetIt, GoRouter)?"
