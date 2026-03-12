@@ -1,18 +1,18 @@
 // ignore_for_file: avoid_print
-/// Merges all per-feature ARB files into lib/l10n/app_en.arb.
+/// Merges all per-feature ARB files into lib/l10n/app_{locale}.arb.
 ///
 /// Run this script whenever you add or change strings in any feature's
-/// l10n/<feature>_en.arb file:
+/// l10n/<feature>_{locale}.arb file:
 ///
 ///   dart run scripts/merge_l10n.dart && flutter gen-l10n
 ///
 /// The script:
-///   1. Finds all lib/features/*/l10n/*_en.arb files.
-///   2. Parses each one and collects every non-@@ key.
-///   3. Inserts the collected keys into lib/l10n/app_en.arb immediately
+///   1. Finds all lib/features/*/l10n/*_{locale}.arb files.
+///   2. Parses each one and groups them by locale.
+///   3. Inserts the collected keys into lib/l10n/app_{locale}.arb immediately
 ///      before the "@@x-mason-anchor" sentinel key (existing keys are
 ///      updated in-place; new keys are appended before the anchor).
-///   4. Writes the updated file back and prints a summary.
+///   4. Writes the updated files back and prints a summary.
 ///
 /// Safe to re-run — existing keys are updated, not duplicated.
 library;
@@ -27,33 +27,6 @@ void main() {
     exit(1);
   }
 
-  final baseFile = File('$projectRoot/lib/l10n/app_en.arb');
-  if (!baseFile.existsSync()) {
-    print(
-      '❌  lib/l10n/app_en.arb not found.\n'
-      '   Run the core brick first: mason make core',
-    );
-    exit(1);
-  }
-
-  // ── Load base ARB ──────────────────────────────────────────────────────────
-  final Map<String, dynamic> base;
-  try {
-    base = json.decode(baseFile.readAsStringSync()) as Map<String, dynamic>;
-  } catch (e) {
-    print('❌  Failed to parse lib/l10n/app_en.arb: $e');
-    exit(1);
-  }
-
-  const anchorKey = '@@x-mason-anchor';
-  if (!base.containsKey(anchorKey)) {
-    print(
-      '❌  lib/l10n/app_en.arb is missing the "$anchorKey" sentinel.\n'
-      '   Add it back: { "@@x-mason-anchor": "__DO_NOT_REMOVE__" }',
-    );
-    exit(1);
-  }
-
   // ── Scan feature ARBs ──────────────────────────────────────────────────────
   final featuresDir = Directory('$projectRoot/lib/features');
   if (!featuresDir.existsSync()) {
@@ -64,68 +37,108 @@ void main() {
   final featureArbs = featuresDir
       .listSync(recursive: true)
       .whereType<File>()
-      .where((f) => f.path.contains('/l10n/') && f.path.endsWith('_en.arb'))
+      .where((f) => f.path.contains('/l10n/') && f.path.endsWith('.arb'))
       .toList()
     ..sort((a, b) => a.path.compareTo(b.path));
 
   if (featureArbs.isEmpty) {
-    print('⚠️  No feature *_en.arb files found — nothing to merge.');
+    print('⚠️  No feature *.arb files found — nothing to merge.');
     return;
   }
 
-  // ── Collect all feature keys ───────────────────────────────────────────────
-  final featureKeys = <String, dynamic>{};
-  for (final arbFile in featureArbs) {
-    try {
-      final decoded =
-          json.decode(arbFile.readAsStringSync()) as Map<String, dynamic>;
-      for (final entry in decoded.entries) {
-        if (!entry.key.startsWith('@@')) {
-          featureKeys[entry.key] = entry.value;
-        }
-      }
-    } catch (e) {
-      print('⚠️  Skipping ${arbFile.path}: $e');
+  final localeRegex = RegExp(r'_([a-z]{2,3}(_[a-zA-Z0-9_]+)*)\.arb$');
+  final arbsByLocale = <String, List<File>>{};
+
+  for (final arb in featureArbs) {
+    final filename = arb.uri.pathSegments.last;
+    final match = localeRegex.firstMatch(filename);
+    if (match != null) {
+      final locale = match.group(1)!;
+      arbsByLocale.putIfAbsent(locale, () => []).add(arb);
+    } else {
+      print('⚠️  Could not extract locale from ${arb.path}, skipping.');
     }
   }
 
-  if (featureKeys.isEmpty) {
-    print('⚠️  Feature ARBs contained no translatable keys — nothing merged.');
+  if (arbsByLocale.isEmpty) {
+    print('⚠️  No translatable keys found to merge.');
     return;
   }
 
-  // ── Merge into base ────────────────────────────────────────────────────────
-  // Strategy: rebuild the map preserving order.
-  //   1. Keep all existing @@ metadata keys at the top (they come before anchor).
-  //   2. Keep any non-@@ keys already in base (update their value if feature
-  //      has a newer version).
-  //   3. Before the anchor, insert any feature keys not yet in base.
-  //   4. Preserve the anchor at its position.
-  final existing = Map<String, dynamic>.from(base);
-  final merged = <String, dynamic>{};
-
-  // Pass 1 — replay base keys; update values from feature where they match
-  for (final entry in existing.entries) {
-    if (entry.key == anchorKey) {
-      // Before the anchor: flush any NEW feature keys not already seen
-      for (final fk in featureKeys.entries) {
-        if (!merged.containsKey(fk.key)) {
-          merged[fk.key] = fk.value;
-        }
-      }
-    }
-    // If this key also came from a feature, use the feature value (fresher)
-    merged[entry.key] = featureKeys.containsKey(entry.key)
-        ? featureKeys[entry.key]
-        : entry.value;
+  final l10nDir = Directory('$projectRoot/lib/l10n');
+  if (!l10nDir.existsSync()) {
+    l10nDir.createSync(recursive: true);
   }
 
+  const anchorKey = '@@x-mason-anchor';
   const encoder = JsonEncoder.withIndent('  ');
-  baseFile.writeAsStringSync('${encoder.convert(merged)}\n');
 
-  final mergedCount = featureKeys.length;
-  print('✅  Merged $mergedCount key(s) from ${featureArbs.length} '
-      'feature ARB(s) into lib/l10n/app_en.arb');
+  for (final entry in arbsByLocale.entries) {
+    final locale = entry.key;
+    final files = entry.value;
+
+    final baseFile = File('${l10nDir.path}/app_$locale.arb');
+    Map<String, dynamic> base = {};
+
+    if (baseFile.existsSync()) {
+      try {
+        base = json.decode(baseFile.readAsStringSync()) as Map<String, dynamic>;
+      } catch (e) {
+        print('❌  Failed to parse ${baseFile.path}: $e');
+        exit(1);
+      }
+    }
+
+    if (!base.containsKey(anchorKey)) {
+      if (base.isEmpty) {
+        base['@@locale'] = locale;
+        base[anchorKey] = '__DO_NOT_REMOVE__';
+      } else {
+        print('❌  ${baseFile.path} is missing the "$anchorKey" sentinel.\n'
+            '   Add it back: { "@@x-mason-anchor": "__DO_NOT_REMOVE__" }');
+        exit(1);
+      }
+    }
+
+    // Collect all feature keys for this locale
+    final featureKeys = <String, dynamic>{};
+    for (final arbFile in files) {
+      try {
+        final decoded =
+            json.decode(arbFile.readAsStringSync()) as Map<String, dynamic>;
+        for (final entry in decoded.entries) {
+          if (!entry.key.startsWith('@@')) {
+            featureKeys[entry.key] = entry.value;
+          }
+        }
+      } catch (e) {
+        print('⚠️  Skipping ${arbFile.path}: $e');
+      }
+    }
+
+    if (featureKeys.isEmpty) continue;
+
+    final existing = Map<String, dynamic>.from(base);
+    final merged = <String, dynamic>{};
+
+    for (final baseEntry in existing.entries) {
+      if (baseEntry.key == anchorKey) {
+        for (final fk in featureKeys.entries) {
+          if (!merged.containsKey(fk.key)) {
+            merged[fk.key] = fk.value;
+          }
+        }
+      }
+      merged[baseEntry.key] = featureKeys.containsKey(baseEntry.key)
+          ? featureKeys[baseEntry.key]
+          : baseEntry.value;
+    }
+
+    baseFile.writeAsStringSync('${encoder.convert(merged)}\n');
+    print('✅  Merged ${featureKeys.length} key(s) from ${files.length} '
+        'feature ARB(s) into app_$locale.arb');
+  }
+
   print('');
   print('Next: flutter gen-l10n');
 }
@@ -134,7 +147,7 @@ void main() {
 String? _findProjectRoot() {
   var dir = Directory.current;
   while (true) {
-    if (File('${dir.path}/pubspec.yaml').existsSync()) return dir.path;
+    if (File('\${dir.path}/pubspec.yaml').existsSync()) return dir.path;
     final parent = dir.parent;
     if (parent.path == dir.path) return null;
     dir = parent;

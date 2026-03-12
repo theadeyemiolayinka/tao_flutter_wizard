@@ -152,7 +152,7 @@ void _mergeL10nKey({
 
 // ─── main.dart patcher ────────────────────────────────────────────────────────
 
-/// Inserts `setup<Feature>Dependencies(GetIt.instance);` before the
+/// Inserts `setup<Feature>Feature(GetIt.instance);` before the
 /// `// mason:core-feature-regis` anchor in lib/main.dart (if it exists).
 void _patchMainDart({
   required String cwd,
@@ -168,12 +168,12 @@ void _patchMainDart({
 
   if (!content.contains(anchor)) return;
 
-  final registration = '  setup${featurePascal}Dependencies(GetIt.instance);';
+  final registration = '  setup${featurePascal}Feature(GetIt.instance);';
   if (content.contains(registration.trim())) return; // already present
 
   final featureSnake = _toSnakeCase(featurePascal);
   final injectionImport =
-      "import 'package:$packageName/features/$featureSnake/injection.dart';";
+      "import 'package:$packageName/features/$featureSnake/$featureSnake.dart';";
   if (!content.contains(injectionImport)) {
     final lines = content.split('\n');
     final lastImportIdx = lines.lastIndexWhere(
@@ -192,7 +192,7 @@ void _patchMainDart({
 
   mainFile.writeAsStringSync(content);
   context.logger.success(
-    'Patched lib/main.dart with setup${featurePascal}Dependencies(GetIt.instance)',
+    'Patched lib/main.dart with setup${featurePascal}Feature(GetIt.instance)',
   );
 }
 

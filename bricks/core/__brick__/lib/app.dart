@@ -11,6 +11,7 @@ import 'package:{{package_name}}/core/router/app_router.dart';
 import 'package:{{package_name}}/core/theme/app_theme.dart';
 {{/theme}}
 import 'package:flutter/material.dart';
+import 'package:{{package_name}}/l10n/app_localizations.dart';
 {{#app_bloc}}
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -29,6 +30,8 @@ class App extends StatelessWidget {
           return MaterialApp{{#app_router}}.router{{/app_router}}(
             title: '{{package_name}}',
             debugShowCheckedModeBanner: false,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
 {{#theme}}
             theme: AppTheme.light,
             darkTheme: AppTheme.dark,
@@ -46,6 +49,8 @@ class App extends StatelessWidget {
     return MaterialApp{{#app_router}}.router{{/app_router}}(
       title: '{{package_name}}',
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
 {{#theme}}
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

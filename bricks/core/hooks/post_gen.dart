@@ -54,7 +54,7 @@ void run(HookContext context) {
 
   context.logger
     ..info('  ${setupMain ? '4' : (appRouter || theme ? '4' : '3')}. Run: flutter gen-l10n')
-    ..info('     (merges all ARB files and generates lib/l10n/generated/app_localizations.dart)');
+    ..info('     (merges all ARB files and generates lib/l10n/app_localizations.dart)');
 
   if (context.vars['config'] as bool? ?? false) {
     context.logger.info('  • Create a .env file at project root for envied config');
@@ -125,14 +125,14 @@ void _patchInjection(String cwd, HookContext context) {
   }
 }
 
-/// Ensures the lib/l10n/generated/ directory exists so Flutter gen-l10n
+/// Ensures the lib/l10n/ directory exists so Flutter gen-l10n
 /// has a valid output target without errors on first run.
 void _ensureL10nGenDir(String cwd, HookContext context) {
-  final genDir = Directory('$cwd/lib/l10n/generated');
+  final genDir = Directory('$cwd/lib/l10n');
   if (!genDir.existsSync()) {
     genDir.createSync(recursive: true);
     // Write a placeholder so git doesn't ignore the empty directory
     File('${genDir.path}/.gitkeep').writeAsStringSync('');
-    context.logger.detail('Created lib/l10n/generated/ (output dir for flutter gen-l10n)');
+    context.logger.detail('Created lib/l10n/ (output dir for flutter gen-l10n)');
   }
 }
