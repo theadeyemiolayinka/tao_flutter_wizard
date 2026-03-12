@@ -20,6 +20,18 @@ enum AuthStatus {
   unauthenticated,
 }
 
+/// Initialization state of the app shell (e.g. restoring sessions, retrieving external app settings).
+enum AppSetupStatus {
+  /// App has not started initializing yet.
+  unknown,
+
+  /// App is currently loading core data.
+  initializing,
+
+  /// App has finished its boot sequence and is ready to show the UI.
+  initialized,
+}
+
 /// Top-level application state managed by [AppBloc].
 ///
 /// Persisted fields (via HydratedBloc): [themeMode], [locale], [isFirstLaunch].
@@ -38,6 +50,9 @@ abstract class AppState with _$AppState {
     /// Whether the user has seen the onboarding screen yet.
     @Default(true) bool isFirstLaunch,
 
+    /// Current application boot status. Not persisted.
+    @Default(AppSetupStatus.unknown) AppSetupStatus setupStatus,
+
     /// Current authentication state. Not persisted.
     @Default(AuthStatus.unknown) AuthStatus authStatus,
 
@@ -54,6 +69,8 @@ abstract class AppState with _$AppState {
   factory AppState.initial() => const AppState();
 
   // ── Convenience getters ──────────────────────────────────────────
+
+  bool get isInitialized => setupStatus == AppSetupStatus.initialized;
 
   bool get isAuthenticated => authStatus == AuthStatus.authenticated;
   bool get isUnknownAuth => authStatus == AuthStatus.unknown;
@@ -79,7 +96,7 @@ abstract class AppState with _$AppState {
         'themeMode': themeMode.index,
         if (locale != null) 'locale': locale!.languageCode,
         'isFirstLaunch': isFirstLaunch,
-        // authStatus, connectivityStatus, forceUpdateRequired are NOT persisted
+        // setupStatus, authStatus, connectivityStatus, forceUpdateRequired are NOT persisted
       };
 }
 {{/app_bloc}}

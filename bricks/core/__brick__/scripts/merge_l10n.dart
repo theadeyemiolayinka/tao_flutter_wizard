@@ -147,7 +147,7 @@ void main() {
 String? _findProjectRoot() {
   var dir = Directory.current;
   while (true) {
-    if (File('\${dir.path}/pubspec.yaml').existsSync()) return dir.path;
+    if (File('${dir.path}/pubspec.yaml').existsSync()) return dir.path;
     final parent = dir.parent;
     if (parent.path == dir.path) return null;
     dir = parent;

@@ -63,8 +63,12 @@ class AppBloc extends HydratedBloc<AppEvent, AppState> {
 
   Future<void> _onStarted(AppStarted event, Emitter<AppState> emit) async {
     // State is already restored by HydratedBloc fromJson.
-    // Emit to trigger downstream listeners (e.g. for auth check).
-    emit(state);
+    emit(state.copyWith(setupStatus: AppSetupStatus.initializing));
+    
+    // TODO: Perform any necessary boot sequence API calls or local checks here
+    // e.g. awaiting getIt<AuthSessionService>().checkSession();
+    
+    emit(state.copyWith(setupStatus: AppSetupStatus.initialized));
   }
 
   void _onThemeModeChanged(ThemeModeChanged event, Emitter<AppState> emit) {
